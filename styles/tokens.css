@@ -1,0 +1,115 @@
+/* 디자인 토큰 — UI 그린은 오너 샘플 #438646. 로고 원색(잉크 #231916, 틸 #00B1A9, 퍼플 #70529F, 코랄 #EF845C, 옐로 #FFD900)은 로고·브랜드 띠에만.
+   실제 빌드에서는 동일 값을 tailwind.config의 theme.extend에 CSS 변수로 연결한다. */
+:root {
+  /* color — neutral */
+  --color-paper: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-sand: #F3EDE4;
+  --color-sand-strong: #E9E0D3;
+  --color-line: #E6DDD1;
+  --color-ink: #231916;
+  --color-ink-2: #574C45;
+  --color-ink-3: #8B8079;
+  /* color — brand. 기준색 #438646 (RGB 67,134,70, 오너 버튼 샘플).
+     흰 글자 대비: #438646 은 4.43:1 로 작은 글자 AA(4.5)에 미달.
+     흰 글자가 올라가는 면만 --color-primary-fill #407F42 (4.85:1). */
+  --color-primary: #438646;
+  --color-primary-fill: #407F42;
+  --color-primary-strong: #366D39;
+  --color-primary-soft: #E8F0E9;
+  --color-deep: #326434;
+  --color-deep-2: #3A733C;
+  --color-on-deep: #F4EFE8;
+  --color-on-deep-2: #D7E8D4;
+  --color-accent: #E7835C;
+  --color-accent-soft: #FBEEE7;
+  --color-plum: #70529F;
+  --color-draw: #438646;           /* 라인 애니메이션 = 브랜드 기준색 */
+  --color-draw-on-dark: #D7E8D4;
+  --gradient-brand: linear-gradient(90deg, #FFD900 0%, #EF845C 30%, #E95377 48%, #70529F 66%, #5386AA 82%, #00B1A9 100%);
+  --overlay-image: linear-gradient(180deg, rgba(50, 100, 52, 0) 55%, rgba(50, 100, 52, 0.32) 100%);
+
+  /* type — Pretendard Variable 단일 패밀리 */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --font-heading: var(--font-sans);   /* 단일 서체: 제목도 Pretendard */
+  --text-display: 4.25rem;   /* 68 */
+  --text-h1: 3rem;           /* 48 */
+  --text-h2: 2.5rem;         /* 40 */
+  --text-h3: 1.3125rem;      /* 21 */
+  --text-lead: 1.1875rem;    /* 19 */
+  --text-body: 1.0625rem;    /* 17 */
+  --text-sm: 0.9375rem;      /* 15 */
+  --text-xs: 0.8125rem;      /* 13 */
+  --text-stat: 3rem;         /* 48 */
+  --text-quote: 1.5rem;      /* 24 */
+  --text-eyebrow: 0.8125rem; /* 13 */
+  --leading-display: 1.18;
+  --leading-tight: 1.28;
+  --leading-snug: 1.4;
+  --leading-body: 1.75;
+  --tracking-display: -0.035em;
+  --tracking-tight: -0.03em;
+  --tracking-num: -0.02em;
+  --tracking-snug: -0.012em;
+  --tracking-wide: 0.14em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-display: 600;
+  --weight-heading: 600;
+  --weight-title: 500;
+
+  /* space — 4px base */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+  --space-12: 3rem; --space-14: 3.5rem; --space-16: 4rem; --space-20: 5rem;
+  --space-24: 6rem; --space-32: 8rem; --space-36: 9rem; --space-40: 10rem; --space-44: 11rem;
+  --section-y: var(--space-44);
+  --container: 75rem;       /* 1200 */
+  --container-wide: 82.5rem;/* 1320 */
+  --gutter: var(--space-8);
+  --header-h: 4.75rem;
+  --mobile-bar-h: 4.25rem;
+
+  /* radius */
+  --radius-sm: 0.5rem; --radius-md: 1rem; --radius-lg: 1.5rem; --radius-xl: 2rem; --radius-pill: 999px;
+
+  /* shadow */
+  --shadow-xs: 0 1px 2px rgba(35, 25, 22, 0.04);
+  --shadow-sm: 0 8px 24px rgba(35, 25, 22, 0.05);
+  --shadow-md: 0 16px 40px rgba(35, 25, 22, 0.06);
+  --shadow-lg: 0 24px 48px rgba(35, 25, 22, 0.08);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms; --dur-base: 280ms; --dur-slow: 600ms;
+  --dur-draw: 1.8s; --dur-draw-short: 1.2s; --draw-stagger: 120ms;
+
+  /* sizes */
+  --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
+  --line-butterfly: 4.5rem;
+  --line-stroke: 1.4;
+  --line-stroke-thin: 1;
+  --line-final: 22rem;
+  --z-header: 40; --z-bar: 50;
+  --color-on-primary: #FFFFFF;
+  --color-danger: #8E3B32;
+  --size-brand-bar: 3px;
+  --logo-h: 2.75rem;
+  --control-h: 3rem;
+  --line-faint: 0.4;
+  --section-intrinsic: 40rem;
+}
+@media (max-width: 1024px) {
+  :root { --text-display: 3.25rem; --text-h1: 2.5rem; --text-h2: 2.125rem; --text-stat: 2.5rem; --section-y: var(--space-32); }
+}
+@media (max-width: 640px) {
+  :root {
+    --text-display: 2.375rem; --text-h1: 2.125rem; --text-h2: 1.75rem; --text-h3: 1.1875rem; --text-lead: 1.0625rem;
+    --text-body: 1rem; --text-stat: 2rem; --text-quote: 1.25rem; --section-y: var(--space-24); --gutter: var(--space-5);
+    --tracking-display: -0.03em; --leading-display: 1.24;
+    --header-h: 4rem; --line-butterfly: 3.5rem;
+  }
+}

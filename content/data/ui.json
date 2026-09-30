@@ -1,0 +1,12 @@
+{
+  "skip": "본문 바로가기",
+  "openMenu": "메뉴 열기",
+  "closeMenu": "메뉴 닫기",
+  "menuTitle": "메뉴",
+  "home": "홈",
+  "draft": "초안",
+  "requiredMark": "필수",
+  "notFoundTitle": "페이지를 찾을 수 없습니다",
+  "notFoundLead": "주소가 바뀌었거나 없는 페이지입니다. 홈에서 다시 찾아 주세요.",
+  "backHome": "홈으로 가기"
+}

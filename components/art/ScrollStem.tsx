@@ -10,10 +10,10 @@ export function ScrollStem({
 }) {
   return (
     <div className="scroll-stem-host">
+      {children}
       <div className={side === "end" ? "scroll-stem scroll-stem-end" : "scroll-stem"}>
         <LineArt kind="stem" thin />
       </div>
-      {children}
     </div>
   );
 }

@@ -80,16 +80,18 @@ export default function HomePage() {
         image={home.firstVisit.image}
         booking={bookingLink}
       />
-      <DirectorBlock
-        eyebrow={home.director.eyebrow}
-        quote={home.director.quote}
-        role={home.director.role}
-        name={home.director.name}
-        education={home.director.education}
-        credentials={[...home.director.credentials]}
-        imageNote={home.director.imageNote}
-        cta={{ label: home.director.cta, href: "/about/director" }}
-      />
+      <ScrollStem side="start">
+        <DirectorBlock
+          eyebrow={home.director.eyebrow}
+          quote={home.director.quote}
+          role={home.director.role}
+          name={home.director.name}
+          education={home.director.education}
+          credentials={[...home.director.credentials]}
+          imageNote={home.director.imageNote}
+          cta={{ label: home.director.cta, href: "/about/director" }}
+        />
+      </ScrollStem>
       <PrivacyBand
         eyebrow={home.privacy.eyebrow}
         title={home.privacy.title}
@@ -105,32 +107,38 @@ export default function HomePage() {
           items={home.space.items.map((item) => ({ ...item }))}
         />
       </ScrollStem>
-      <PricingCards
-        eyebrow={home.pricing.eyebrow}
-        title={home.pricing.title}
-        items={home.pricing.items}
-        note={home.pricing.note}
-        cta={{ label: home.pricing.cta, href: "/pricing" }}
-      />
       <ScrollStem side="end">
+        <PricingCards
+          eyebrow={home.pricing.eyebrow}
+          title={home.pricing.title}
+          items={home.pricing.items}
+          note={home.pricing.note}
+          cta={{ label: home.pricing.cta, href: "/pricing" }}
+        />
+      </ScrollStem>
+      <ScrollStem side="start">
         <ProcessSteps eyebrow={home.process.eyebrow} title={home.process.title} steps={home.process.steps} />
       </ScrollStem>
-      <FaqList
-        eyebrow={home.faq.eyebrow}
-        title={home.faq.title}
-        items={home.faq.items}
-        more={{ label: home.faq.more, href: "/faq" }}
-      />
+      <ScrollStem side="end">
+        <FaqList
+          eyebrow={home.faq.eyebrow}
+          title={home.faq.title}
+          items={home.faq.items}
+          more={{ label: home.faq.more, href: "/faq" }}
+        />
+      </ScrollStem>
       <ScrollStem side="start">
         <Channels eyebrow={home.channels.eyebrow} title={home.channels.title} items={channelItems} />
       </ScrollStem>
-      <LocationBlock
-        eyebrow={home.location.eyebrow}
-        title={home.location.title}
-        rows={locationRows}
-        image={home.location.mapImage}
-        ctas={mapLinks}
-      />
+      <ScrollStem side="end">
+        <LocationBlock
+          eyebrow={home.location.eyebrow}
+          title={home.location.title}
+          rows={locationRows}
+          image={home.location.mapImage}
+          ctas={mapLinks}
+        />
+      </ScrollStem>
       <FinalCta
         title={home.finalCta.title}
         lead={home.finalCta.lead}

@@ -1,3 +1,4 @@
+import { ScrollStem } from "@/components/art/ScrollStem";
 import { Channels } from "@/components/sections/Channels";
 import { DirectorBlock } from "@/components/sections/DirectorBlock";
 import { FaqList } from "@/components/sections/FaqList";
@@ -59,13 +60,15 @@ export default function HomePage() {
         phone={phoneLink}
       />
       <StatStrip items={home.stats.map((item) => ({ ...item, sub: "sub" in item ? item.sub : undefined }))} />
-      <ProgramGrid
-        eyebrow={home.programs.eyebrow}
-        title={home.programs.title}
-        lead={home.programs.lead}
-        items={home.programs.items}
-        more={{ label: home.programs.more, href: "/programs" }}
-      />
+      <ScrollStem side="end">
+        <ProgramGrid
+          eyebrow={home.programs.eyebrow}
+          title={home.programs.title}
+          lead={home.programs.lead}
+          items={home.programs.items}
+          more={{ label: home.programs.more, href: "/programs" }}
+        />
+      </ScrollStem>
       <FirstVisit
         eyebrow={home.firstVisit.eyebrow}
         title={home.firstVisit.title}
@@ -94,12 +97,14 @@ export default function HomePage() {
         points={home.privacy.points}
         image={home.privacy.image}
       />
-      <SpaceBento
-        eyebrow={home.space.eyebrow}
-        title={home.space.title}
-        lead={home.space.lead}
-        items={home.space.items.map((item) => ({ ...item }))}
-      />
+      <ScrollStem side="start">
+        <SpaceBento
+          eyebrow={home.space.eyebrow}
+          title={home.space.title}
+          lead={home.space.lead}
+          items={home.space.items.map((item) => ({ ...item }))}
+        />
+      </ScrollStem>
       <PricingCards
         eyebrow={home.pricing.eyebrow}
         title={home.pricing.title}
@@ -107,14 +112,18 @@ export default function HomePage() {
         note={home.pricing.note}
         cta={{ label: home.pricing.cta, href: "/pricing" }}
       />
-      <ProcessSteps eyebrow={home.process.eyebrow} title={home.process.title} steps={home.process.steps} />
+      <ScrollStem side="end">
+        <ProcessSteps eyebrow={home.process.eyebrow} title={home.process.title} steps={home.process.steps} />
+      </ScrollStem>
       <FaqList
         eyebrow={home.faq.eyebrow}
         title={home.faq.title}
         items={home.faq.items}
         more={{ label: home.faq.more, href: "/faq" }}
       />
-      <Channels eyebrow={home.channels.eyebrow} title={home.channels.title} items={channelItems} />
+      <ScrollStem side="start">
+        <Channels eyebrow={home.channels.eyebrow} title={home.channels.title} items={channelItems} />
+      </ScrollStem>
       <LocationBlock
         eyebrow={home.location.eyebrow}
         title={home.location.title}

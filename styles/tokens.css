@@ -95,6 +95,7 @@
   /* sizes */
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
   --line-butterfly: 4.5rem;
+  --line-stem: 2rem;
   --line-stroke: 1.4;
   --line-stroke-thin: 1;
   --line-final: 22rem;
@@ -113,5 +114,6 @@
     --leading-display: 1.24;
     --header-h: 4rem;
     --line-butterfly: 3.5rem;
+    --line-stem: 1.75rem;
   }
 }

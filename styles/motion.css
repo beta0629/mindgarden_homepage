@@ -30,6 +30,29 @@
   stroke-width: var(--line-stroke-thin);
 }
 
+.scroll-stem-host {
+  position: relative;
+}
+
+.scroll-stem {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--gutter);
+  width: var(--line-stem);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scroll-stem-end {
+  left: auto;
+  right: var(--gutter);
+}
+
+.scroll-stem .line-draw {
+  display: block;
+  width: 100%;
+}
+
 html.motion-ready .line-draw path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;

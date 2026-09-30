@@ -1,4 +1,5 @@
 import { ProgramGrid } from "@/components/sections/ProgramGrid";
+import { bookingLink } from "@/config/site";
 import { programs, programsPage } from "@/content/programs";
 import { seo } from "@/content/seo";
 import { pageMetadata } from "@/lib/metadata";
@@ -12,7 +13,10 @@ export default function ProgramsPage() {
         eyebrow={programsPage.eyebrow}
         title={programsPage.title}
         lead={programsPage.lead}
+        heading="h1"
         items={programs}
+        booking={bookingLink}
+        bookingLabel={programsPage.bookingLabel}
       />
     </main>
   );

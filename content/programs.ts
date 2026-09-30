@@ -24,6 +24,7 @@ export const programsPage = {
   title: "상담 프로그램",
   lead: "연령과 상황에 맞춰 검사와 상담을 조합합니다. 한 사람의 어려움을 하나의 이름표로 단정하지 않습니다.",
   more: homeData.programs.more,
+  bookingLabel: homeData.hero.primaryCta,
 };
 
 const detail = {

@@ -29,20 +29,23 @@
   --gradient-brand: linear-gradient(90deg, #FFD900 0%, #EF845C 30%, #E95377 48%, #70529F 66%, #5386AA 82%, #00B1A9 100%);
   --overlay-image: linear-gradient(180deg, rgba(50, 100, 52, 0) 55%, rgba(50, 100, 52, 0.32) 100%);
 
-  /* type — Pretendard Variable 단일 패밀리 */
+  /* type — Pretendard Variable 단일 패밀리.
+     Fluid clamps run from the 640px mobile size to a large-screen size a bit above the old desktop step.
+     Preferred term is rem + vw so the min/max still track the root font size. */
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --font-heading: var(--font-sans);   /* 단일 서체: 제목도 Pretendard */
-  --text-display: 4.25rem;   /* 68 */
-  --text-h1: 3rem;           /* 48 */
-  --text-h2: 2.5rem;         /* 40 */
-  --text-h3: 1.3125rem;      /* 21 */
-  --text-lead: 1.1875rem;    /* 19 */
-  --text-body: 1.0625rem;    /* 17 */
-  --text-sm: 0.9375rem;      /* 15 */
+  --text-display: clamp(2.375rem, 0.475rem + 4.75vw, 4.75rem); /* 38 → 76 */
+  --text-h1: clamp(2.125rem, 1.025rem + 2.75vw, 3.5rem);       /* 34 → 56 */
+  --text-h2: clamp(1.75rem, 0.85rem + 2.25vw, 2.875rem);       /* 28 → 46 */
+  --text-h3: clamp(1.1875rem, 0.9375rem + 0.625vw, 1.5rem);    /* 19 → 24 */
+  --text-lead: clamp(1.0625rem, 0.9125rem + 0.375vw, 1.25rem); /* 17 → 20 */
+  --text-body: clamp(1rem, 0.9rem + 0.25vw, 1.125rem);         /* 16 → 18 */
+  --text-sm: 0.9375rem;      /* 15 — UI chrome stays put */
   --text-xs: 0.8125rem;      /* 13 */
-  --text-stat: 3rem;         /* 48 */
-  --text-quote: 1.5rem;      /* 24 */
+  --text-stat: clamp(2rem, 0.8rem + 3vw, 3.5rem);              /* 32 → 56 */
+  --text-quote: clamp(1.25rem, 0.85rem + 1vw, 1.75rem);        /* 20 → 28 */
   --text-eyebrow: 0.8125rem; /* 13 */
+  --measure: 65ch;
   --leading-display: 1.18;
   --leading-tight: 1.28;
   --leading-snug: 1.4;
@@ -65,10 +68,12 @@
   --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
   --space-12: 3rem; --space-14: 3.5rem; --space-16: 4rem; --space-20: 5rem;
   --space-24: 6rem; --space-32: 8rem; --space-36: 9rem; --space-40: 10rem; --space-44: 11rem;
-  --section-y: var(--space-44);
-  --container: 75rem;       /* 1200 */
-  --container-wide: 82.5rem;/* 1320 */
-  --gutter: var(--space-8);
+  /* Section padding grows from the mobile 6rem to 12.5rem on large screens. */
+  --section-y: clamp(6rem, 0.8rem + 13vw, 12.5rem);
+  /* Content width grows from 80rem (1280px) toward a 100rem (1600px) cap. */
+  --container: clamp(80rem, 96vw, 100rem);
+  --container-wide: 100rem;
+  --gutter: clamp(1.25rem, 0.25rem + 2.5vw, 2.5rem);
   --header-h: 4.75rem;
   --mobile-bar-h: 4.25rem;
 
@@ -102,14 +107,11 @@
   --line-faint: 0.4;
   --section-intrinsic: 40rem;
 }
-@media (max-width: 1024px) {
-  :root { --text-display: 3.25rem; --text-h1: 2.5rem; --text-h2: 2.125rem; --text-stat: 2.5rem; --section-y: var(--space-32); }
-}
 @media (max-width: 640px) {
   :root {
-    --text-display: 2.375rem; --text-h1: 2.125rem; --text-h2: 1.75rem; --text-h3: 1.1875rem; --text-lead: 1.0625rem;
-    --text-body: 1rem; --text-stat: 2rem; --text-quote: 1.25rem; --section-y: var(--space-24); --gutter: var(--space-5);
-    --tracking-display: -0.03em; --leading-display: 1.24;
-    --header-h: 4rem; --line-butterfly: 3.5rem;
+    --tracking-display: -0.03em;
+    --leading-display: 1.24;
+    --header-h: 4rem;
+    --line-butterfly: 3.5rem;
   }
 }

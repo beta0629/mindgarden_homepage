@@ -40,7 +40,7 @@ export function Hero({
               </span>
             ))}
           </h1>
-          <p className="type-lead mt-5 max-w-prose lg:mt-8">{lead}</p>
+          <p className="type-lead mt-5 max-w-measure lg:mt-8">{lead}</p>
           <div className="mt-6 flex flex-wrap items-center gap-6 lg:mt-12">
             <ButtonLink link={booking} size="lg">
               <Calendar data-icon="inline-start" aria-hidden="true" />
@@ -61,7 +61,7 @@ export function Hero({
           </ul>
         </div>
         <figure className="flex flex-col gap-4">
-          <Photo image={image} sizes="(max-width: 1024px) 100vw, 560px" eager frame="hero" />
+          <Photo image={image} sizes="(max-width: 1024px) 100vw, 46vw" eager frame="hero" />
           <figcaption className="flex flex-col items-start gap-1 lg:items-end lg:text-right">
             <span className="type-xs font-semibold text-coral">{floatCard.label}</span>
             <span className="type-h3 text-ink">{floatCard.title}</span>

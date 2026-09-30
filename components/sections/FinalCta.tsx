@@ -11,6 +11,7 @@ export function FinalCta({
   booking,
   chat,
   phone,
+  contact,
 }: {
   title: string;
   lead: string;
@@ -18,6 +19,7 @@ export function FinalCta({
   booking: LinkItem;
   chat: LinkItem;
   phone: LinkItem;
+  contact?: LinkItem;
 }) {
   return (
     <section className="relative overflow-hidden bg-deep py-section text-on-deep">
@@ -38,6 +40,9 @@ export function FinalCta({
           <SiteLink link={phone} className="type-sm text-on-deep hover:text-surface">
             {phone.label}
           </SiteLink>
+          {contact ? (
+            <SiteLink link={contact} className="type-sm text-on-deep hover:text-surface" />
+          ) : null}
         </div>
       </Container>
     </section>

@@ -8,6 +8,8 @@ export function Footer({
   wordmark,
   homeLabel,
   tagline,
+  menuTitle,
+  pages,
   contacts,
   channels,
   hours,
@@ -20,6 +22,8 @@ export function Footer({
   wordmark: { title: string; subtitle: string };
   homeLabel: string;
   tagline: string;
+  menuTitle: string;
+  pages: LinkItem[];
   contacts: LinkItem[];
   channels: LinkItem[];
   hours: string[];
@@ -42,6 +46,15 @@ export function Footer({
           />
           <p className="type-sm text-ink-2">{tagline}</p>
         </div>
+        <nav aria-label={menuTitle}>
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            {pages.map((link) => (
+              <li key={link.href}>
+                <SiteLink link={link} className="type-sm text-ink hover:text-brand" />
+              </li>
+            ))}
+          </ul>
+        </nav>
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <ul className="flex flex-col gap-2">
             {contacts.map((link) => (

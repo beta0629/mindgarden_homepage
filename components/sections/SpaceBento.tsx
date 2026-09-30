@@ -24,7 +24,7 @@ export function SpaceBento({
               <Photo
                 image={item}
                 frame={item.size === "tall" ? "portrait" : "card"}
-                sizes="(max-width: 1024px) 100vw, 360px"
+                sizes="(max-width: 1024px) 100vw, 30vw"
                 className={item.size === "tall" ? "h-full" : undefined}
               />
               <figcaption className="type-xs text-ink-3">{item.caption}</figcaption>

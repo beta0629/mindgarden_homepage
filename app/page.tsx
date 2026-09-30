@@ -12,8 +12,9 @@ import { ProgramGrid } from "@/components/sections/ProgramGrid";
 import { SpaceBento } from "@/components/sections/SpaceBento";
 import { StatStrip } from "@/components/sections/StatStrip";
 import { bookingLink, phoneLink, requireLink, resolveLink, site } from "@/config/site";
+import contactData from "@/content/data/contact.json";
 import { home } from "@/content/home";
-import { pageMetadata, } from "@/lib/metadata";
+import { pageMetadata } from "@/lib/metadata";
 import { seo } from "@/content/seo";
 
 export const metadata = {
@@ -25,7 +26,7 @@ export default function HomePage() {
   const locationRows = home.location.rows.map((row) => ({
     icon: row.icon,
     label: row.label,
-    lines: "lines" in row && row.lines ? [...row.lines] : [...site.hours.items],
+    lines: ("lines" in row && row.lines ? [...row.lines] : [...site.hours.items]).map((text) => ({ text })),
   }));
   const mapLinks = home.location.ctas.flatMap((key) => {
     const link = resolveLink(key);
@@ -33,6 +34,10 @@ export default function HomePage() {
     if (!link || !label || !("label" in label)) return [];
     return [{ label: label.label, link }];
   });
+  const locationNav = site.nav.find((item) => item.href === "/location");
+  if (locationNav) {
+    mapLinks.push({ label: locationNav.label, link: { ...locationNav, external: false } });
+  }
   const channelItems = home.channels.items.flatMap((item) => {
     const link = resolveLink(item.linkKey);
     if (!link) return [];
@@ -124,6 +129,7 @@ export default function HomePage() {
         booking={bookingLink}
         chat={chat}
         phone={phoneLink}
+        contact={{ label: contactData.title, href: "/contact", external: false }}
       />
     </main>
   );

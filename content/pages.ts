@@ -1,3 +1,5 @@
+import { mapEmbedSrc, resolveLink, site } from "@/config/site";
+import type { LinkItem } from "@/lib/types";
 import directorData from "./data/director.json";
 import homeData from "./data/home.json";
 import pricingData from "./data/pricing.json";
@@ -68,10 +70,40 @@ export const pricingPage = {
   bookingCta: homeData.hero.primaryCta,
 };
 
+function textLines(lines: readonly string[]) {
+  return lines.map((text) => ({ text }));
+}
+
+function linkedLine(link: LinkItem | null) {
+  if (!link) return [];
+  return [{ text: link.label, link }];
+}
+
+const phoneLabel =
+  homeData.mobileBar.find((item) => item.linkKey === "phoneMain")?.label ?? site.contact.phoneMain.label;
+
 export const locationPage = {
+  eyebrow: homeData.location.eyebrow,
   title: homeData.location.title,
   lead: "송도 아크리아2 2층. 건물 안 무료 주차로 오시면 됩니다.",
-  mapCta: "네이버 지도에서 보기",
+  rows: homeData.location.rows.flatMap((row) => {
+    const lines = "lines" in row && row.lines ? textLines(row.lines) : textLines(site.hours.items);
+    const current = { icon: row.icon, label: row.label, lines };
+    if (row.icon !== "pin") return [current];
+    return [
+      current,
+      {
+        icon: "phone",
+        label: phoneLabel,
+        lines: [...linkedLine(resolveLink("phoneMain")), ...linkedLine(resolveLink("phoneMobile"))],
+      },
+    ];
+  }),
+  map: {
+    src: mapEmbedSrc,
+    title: homeData.location.title,
+  },
+  mapLinkKeys: ["naverMap", "googleMap"] as const,
 };
 
 export const contactPage = {

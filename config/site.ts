@@ -47,3 +47,7 @@ export const bookingLink = requireLink("booking");
 export const privacyLink = requireLink("privacy");
 export const phoneLink = requireLink("phoneMain");
 export const talkLink = requireLink("talktalk");
+
+export const mapEmbedSrc = site.geo.embed.pattern
+  .replaceAll("{lat}", String(site.geo.lat))
+  .replaceAll("{lng}", String(site.geo.lng));

@@ -29,7 +29,7 @@ export default async function ProgramPage(props: { params: Promise<{ slug: strin
     <main className="pb-section">
       <PageIntro eyebrow={program.tag} title={program.title} lead={program.lead} />
       <Container className="grid gap-12 lg:grid-cols-2">
-        <Photo image={program.image} frame="portrait" sizes="(max-width: 1024px) 100vw, 520px" />
+        <Photo image={program.image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" />
         <div className="flex flex-col gap-10">
           <section className="flex flex-col gap-4">
             <h2 className="type-h3 text-ink">{program.labels.forTitle}</h2>

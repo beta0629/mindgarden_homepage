@@ -36,7 +36,7 @@ export function PrivacyBand({
             ))}
           </ul>
         </div>
-        <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 520px" />
+        <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" />
       </Container>
     </section>
   );

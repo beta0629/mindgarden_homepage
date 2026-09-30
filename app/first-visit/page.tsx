@@ -1,7 +1,8 @@
 import { Container } from "@/components/layout/Container";
 import { PageIntro } from "@/components/sections/PageIntro";
 import { FirstVisit } from "@/components/sections/FirstVisit";
-import { bookingLink } from "@/config/site";
+import { SiteLink } from "@/components/links/SiteLink";
+import { bookingLink, site } from "@/config/site";
 import { home } from "@/content/home";
 import { firstVisitPage } from "@/content/pages";
 import { seo } from "@/content/seo";
@@ -43,6 +44,18 @@ export default function FirstVisitPage() {
                   {line}
                 </li>
               ))}
+            </ul>
+            <ul className="flex flex-col gap-2">
+              {site.nav
+                .filter((item) => item.href === "/pricing" || item.href === "/location")
+                .map((item) => (
+                  <li key={item.href}>
+                    <SiteLink
+                      link={{ ...item, external: false }}
+                      className="type-sm font-semibold text-brand hover:underline"
+                    />
+                  </li>
+                ))}
             </ul>
           </section>
         </Container>

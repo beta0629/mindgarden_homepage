@@ -32,7 +32,7 @@ export function FirstVisit({
       <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <div className="relative">
           <LineArt kind="stem" thin className="absolute -left-2 top-0 hidden w-16 lg:block" />
-          <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 480px" className="lg:ml-12" />
+          <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" className="lg:ml-12" />
         </div>
         <div className="flex flex-col gap-8">
           <p className="type-eyebrow-en">{eyebrow}</p>

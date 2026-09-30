@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitContact, type ContactState } from "@/app/contact/actions";
 import { SiteLink } from "@/components/links/SiteLink";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,8 @@ export function ContactForm({
   phone: LinkItem;
 }) {
   const [state, action, pending] = useActionState(submitContact, { status: "idle" } satisfies ContactState);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [consentChecked, setConsentChecked] = useState(false);
 
   if (state.status === "success") {
     return (
@@ -68,6 +70,8 @@ export function ContactForm({
                 <Textarea
                   id={field.name}
                   name={field.name}
+                  value={values[field.name] ?? ""}
+                  onChange={(event) => setValues((current) => ({ ...current, [field.name]: event.target.value }))}
                   aria-invalid={invalid}
                   className="min-h-32 rounded-lg bg-surface px-4 py-3 type-sm"
                 />
@@ -75,7 +79,8 @@ export function ContactForm({
                 <select
                   id={field.name}
                   name={field.name}
-                  defaultValue=""
+                  value={values[field.name] ?? ""}
+                  onChange={(event) => setValues((current) => ({ ...current, [field.name]: event.target.value }))}
                   className="h-control w-full rounded-lg border border-line bg-surface px-4 type-sm text-ink"
                 >
                   <option value="">{field.emptyLabel}</option>
@@ -93,6 +98,8 @@ export function ContactForm({
                   required={field.required}
                   autoComplete={field.autocomplete}
                   placeholder={field.placeholder}
+                  value={values[field.name] ?? ""}
+                  onChange={(event) => setValues((current) => ({ ...current, [field.name]: event.target.value }))}
                   aria-invalid={invalid}
                   className="h-control rounded-lg bg-surface px-4 type-sm"
                 />
@@ -125,14 +132,26 @@ export function ContactForm({
         </SiteLink>
         <Field data-invalid={Boolean(state.fieldErrors?.consent) || undefined}>
           <label className="flex items-start gap-3">
-            <input type="checkbox" name="consent" value="yes" className="consent-box" />
+            <input
+              type="checkbox"
+              name="consent"
+              value="yes"
+              required
+              checked={consentChecked}
+              onChange={(event) => setConsentChecked(event.target.checked)}
+              className="consent-box"
+            />
             <span className="type-sm text-ink">{consent.label}</span>
           </label>
           {state.fieldErrors?.consent ? <FieldError>{state.fieldErrors.consent}</FieldError> : null}
         </Field>
       </section>
 
-      {state.status === "error" && state.message ? <p className="type-sm text-destructive">{state.message}</p> : null}
+      {state.status === "error" && state.message ? (
+        <p className="type-sm text-destructive" role="alert">
+          {state.message}
+        </p>
+      ) : null}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {submitLabel}
       </Button>

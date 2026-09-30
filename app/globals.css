@@ -60,6 +60,15 @@
   --aspect-hero: 4 / 5;
   --aspect-card: 4 / 3;
   --aspect-portrait: 4 / 5;
+  --text-display: var(--text-display);
+  --text-h1: var(--text-h1);
+  --text-h2: var(--text-h2);
+  --text-h3: var(--text-h3);
+  --text-lead: var(--text-lead);
+  --text-body: var(--text-body);
+  --text-stat: var(--text-stat);
+  --text-quote: var(--text-quote);
+  --max-width-prose: var(--measure);
 }
 
 :root {
@@ -101,6 +110,10 @@
 
 @utility max-w-page {
   max-width: var(--container);
+}
+
+@utility max-w-measure {
+  max-width: var(--measure);
 }
 
 @utility h-header {
@@ -177,6 +190,7 @@
     line-height: var(--leading-display);
     letter-spacing: var(--tracking-display);
     color: var(--color-ink);
+    text-wrap: balance;
   }
 
   .type-h1 {
@@ -185,6 +199,7 @@
     font-weight: var(--weight-bold);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
   }
 
   .type-h2 {
@@ -193,6 +208,7 @@
     font-weight: var(--weight-heading);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
   }
 
   .type-h3 {
@@ -204,6 +220,7 @@
   }
 
   .type-lead {
+    max-width: var(--measure);
     font-size: var(--text-lead);
     font-weight: var(--weight-regular);
     line-height: var(--leading-body);
@@ -212,6 +229,7 @@
   }
 
   .type-quote {
+    max-width: var(--measure);
     font-size: var(--text-quote);
     font-weight: var(--weight-title);
     line-height: var(--leading-body);
@@ -269,6 +287,15 @@
 
   .media-frame-portrait {
     aspect-ratio: 4 / 5;
+  }
+
+  .map-frame {
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--aspect-card);
+    border: 0;
+    border-radius: var(--radius-xl);
+    background: var(--color-sand);
   }
 
   .media-cover {
@@ -352,6 +379,7 @@
 
   .policy p,
   .policy li {
+    max-width: var(--measure);
     color: var(--color-ink-2);
     font-size: var(--text-body);
     line-height: var(--leading-body);

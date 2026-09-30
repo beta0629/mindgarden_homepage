@@ -159,7 +159,10 @@
   "geo": {
     "lat": 37.3942628,
     "lng": 126.6508326,
-    "source": "https://www.m-garden.co.kr/location (구글 지도 링크)"
+    "source": "https://www.m-garden.co.kr/location (구글 지도 링크)",
+    "embed": {
+      "pattern": "https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s{lat},{lng}"
+    }
   },
   "payment": {
     "items": [

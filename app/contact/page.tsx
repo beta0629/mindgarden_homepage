@@ -1,7 +1,8 @@
 import { ContactForm } from "@/components/contact/ContactForm";
 import { Container } from "@/components/layout/Container";
+import { SiteLink } from "@/components/links/SiteLink";
 import { PageIntro } from "@/components/sections/PageIntro";
-import { phoneLink, privacyLink } from "@/config/site";
+import { phoneLink, privacyLink, resolveLink } from "@/config/site";
 import contactData from "@/content/data/contact.json";
 import pricingData from "@/content/data/pricing.json";
 import { seo } from "@/content/seo";
@@ -30,7 +31,16 @@ export default function ContactPage() {
   return (
     <main className="pb-section">
       <PageIntro title={contactData.title} lead={contactData.lead} />
-      <Container className="max-w-3xl">
+      <Container className="flex max-w-3xl flex-col gap-8">
+        <ul className="flex flex-col gap-2">
+          {[resolveLink("phoneMain"), resolveLink("phoneMobile")].map((link) =>
+            link ? (
+              <li key={link.href}>
+                <SiteLink link={link} className="type-sm text-ink hover:text-brand" />
+              </li>
+            ) : null,
+          )}
+        </ul>
         <ContactForm
           fields={fields}
           consent={{

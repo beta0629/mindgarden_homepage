@@ -94,18 +94,20 @@
 
   /* sizes */
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
-  --line-butterfly: 6rem;
+  --line-butterfly: 4.75rem;
   --line-stem: 2.75rem;
   --line-leaf: 2.75rem;
   /* The line overlay runs the full page and continues a short way into the footer. */
   --page-stem-footer: 12rem;
   /* On-screen stroke of the wrapping line. The viewBox is 1 CSS pixel per user unit. */
-  --line-stroke-wrap: 2px;
+  --line-stroke-wrap: 1.75px;
   --line-stroke-stem: 2px;
   --line-stroke-vein: 1.25px;
   --line-stroke-wing: 1.35px;
   /* Faint accent line behind text and photos. */
-  --line-opacity: 0.45;
+  --line-opacity: 0.4;
+  /* Length of the single corner hook. It stops well short of framing a block. */
+  --line-corner-arm: 5.5rem;
   --line-leaf-gap: 7rem;
   --line-butterfly-gap: 16px;
   /* Short opening stroke at scroll 0, then the line turns around each block. */
@@ -123,8 +125,8 @@
   --vb-spine: 80px;
   --vb-spine-h: 240px;
   --vb-leaf: 48px;
-  --line-stroke: 1.35;
-  --line-stroke-thin: 1.35;
+  --line-stroke: 1.5;
+  --line-stroke-thin: 1.5;
   --line-final: 22rem;
   --z-header: 40; --z-bar: 50;
   --color-on-primary: #FFFFFF;
@@ -140,11 +142,12 @@
     --tracking-display: -0.03em;
     --leading-display: 1.24;
     --header-h: 4rem;
-    --line-butterfly: 4.25rem;
+    --line-butterfly: 3.75rem;
     --line-stem: 1.65rem;
     --line-leaf: 2.25rem;
     --line-leaf-gap: 5.5rem;
-    --line-stroke-wrap: 2px;
+    --line-stroke-wrap: 1.75px;
+    --line-corner-arm: 4.25rem;
     --line-stroke-stem: 2px;
     --line-bend: 1.15rem;
     --wrap-start: 5.5rem;

@@ -164,87 +164,15 @@ function simplify(points: Point[]) {
   return out;
 }
 
-/**
- * Edges of one block, always including a turn. Side-by-side blocks stop on the shared
- * gutter so the stroke does not run to the bottom and trace back up the same edge.
- */
-function wrapBlock(box: Box, from: Point, toward: Point): Point[] {
-  const tl = { x: box.x, y: box.y };
-  const tr = { x: rightOf(box), y: box.y };
-  const br = { x: rightOf(box), y: bottomOf(box) };
-  const bl = { x: box.x, y: bottomOf(box) };
-  const fromLeft = from.x <= box.x + box.w * 0.5;
-  const nextRight = toward.x >= box.x + box.w * 0.45;
-  const beside = toward.y > box.y + 28 && toward.y < bottomOf(box) - 28;
-  if (from.x < box.x - 8 && from.y > box.y + 16 && from.y < bottomOf(box) - 16) {
-    const door = { x: box.x, y: clamp(from.y, box.y + 28, bottomOf(box) - 28) };
-    return [door, tl, tr, br, bl];
-  }
-  if (from.x > rightOf(box) + 8 && from.y > box.y + 16 && from.y < bottomOf(box) - 16) {
-    const door = { x: rightOf(box), y: clamp(from.y, box.y + 28, bottomOf(box) - 28) };
-    return [door, tr, tl, bl, br];
-  }
-  const onTop = from.y <= box.y + 28 && from.x >= box.x - 12 && from.x <= rightOf(box) + 12;
-  if (onTop) {
-    const start = { x: clamp(from.x, box.x, rightOf(box)), y: box.y };
-    if (beside && nextRight) {
-      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
-      return [start, tr, { x: tr.x, y }];
-    }
-    if (beside && !nextRight) {
-      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
-      return [start, tl, { x: tl.x, y }];
-    }
-    if (nextRight) return [start, tr, br];
-    return [start, tl, bl];
-  }
-  if (from.y <= box.y + 28) {
-    if (beside && fromLeft && nextRight) {
-      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
-      return [tl, tr, { x: tr.x, y }];
-    }
-    if (beside && !fromLeft && !nextRight) {
-      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
-      return [tr, tl, { x: tl.x, y }];
-    }
-    if (fromLeft && nextRight) return [tl, tr, br];
-    if (!fromLeft && !nextRight) return [tr, tl, bl];
-    if (fromLeft) return [tl, tr, br, bl];
-    return [tr, tl, bl, br];
-  }
-  if (from.x <= box.x + 16) return nextRight ? [tl, tr, br] : [tl, tr, br, bl];
-  if (from.x >= rightOf(box) - 16) return nextRight ? [tr, br, bl] : [tr, tl, bl];
-  if (fromLeft) return [tl, tr, br];
-  return [tr, tl, bl];
-}
-
-/** A wrap that never turns is just a left edge. Force the stroke across the block. */
-function ensureTurn(points: Point[], box: Box): Point[] {
-  if (points.length < 2) return points;
-  let minX = points[0]?.x ?? 0;
-  let maxX = minX;
-  let minY = points[0]?.y ?? 0;
-  let maxY = minY;
-  for (const point of points) {
-    minX = Math.min(minX, point.x);
-    maxX = Math.max(maxX, point.x);
-    minY = Math.min(minY, point.y);
-    maxY = Math.max(maxY, point.y);
-  }
-  if (maxX - minX > Math.min(96, box.w * 0.55) && maxY - minY > 36) return points;
+/** A short hook around one corner. It does not trace the rest of the block. */
+function cornerHook(box: Box, arm: number): Point[] {
+  const along = Math.min(arm, Math.max(48, box.w * 0.36));
+  const down = Math.min(arm * 0.62, Math.max(40, box.h * 0.32));
   return [
+    { x: box.x + along, y: box.y },
     { x: box.x, y: box.y },
-    { x: rightOf(box), y: box.y },
-    { x: rightOf(box), y: bottomOf(box) },
-    { x: box.x, y: bottomOf(box) },
+    { x: box.x, y: box.y + down },
   ];
-}
-
-function route(from: Point, to: Point): Point[] {
-  if (gapOf(from, to) < 2) return [];
-  if (Math.abs(from.x - to.x) < 2 || Math.abs(from.y - to.y) < 2) return [to];
-  if (Math.abs(to.x - from.x) >= Math.abs(to.y - from.y)) return [{ x: to.x, y: from.y }, to];
-  return [{ x: from.x, y: to.y }, to];
 }
 
 function targetsFrom(photos: Box[], blocks: Box[], clusterGap: number, width: number, height: number, pad: number) {
@@ -276,54 +204,30 @@ function targetsFrom(photos: Box[], blocks: Box[], clusterGap: number, width: nu
 export function buildPlant({
   width,
   height,
-  anchor,
+  focusY,
   photos,
   blocks,
   radius,
   pad,
-  bend,
-  start,
+  arm,
   clusterGap,
 }: {
   width: number;
   height: number;
-  anchor: Box;
+  focusY: number;
   photos: Box[];
   blocks: Box[];
   radius: number;
   pad: number;
-  bend: number;
-  start: number;
+  arm: number;
   clusterGap: number;
 }): PlantGeometry {
   const viewBox = `0 0 ${round(width)} ${round(height)}`;
   const targets = targetsFrom(photos, blocks, clusterGap, width, height, pad);
-  const y = clamp(anchor.y + anchor.h + 8, 12, Math.max(12, height - 48));
-  const x0 = clamp(anchor.x + 2, 12, width - 120);
-  const x1 = clamp(x0 + Math.max(72, start), x0 + 72, Math.min(width - 24, x0 + width * 0.22));
-  const origin = { x: x0, y };
-  const stub = { x: x1, y };
-  const tail: Point[] = [stub];
-  let cursor = stub;
-
-  targets.forEach((box, index) => {
-    const next = targets[index + 1];
-    const toward = next
-      ? { x: next.x + next.w / 2, y: next.y + Math.min(next.h * 0.35, 80) }
-      : { x: box.x + box.w / 2, y: Math.min(height - 16, bottomOf(box) + 160) };
-    const wrap = ensureTurn(wrapBlock(box, cursor, toward), box);
-    const first = wrap[0];
-    if (!first) return;
-    for (const point of route(cursor, first)) tail.push(point);
-    for (const point of wrap) tail.push(point);
-    cursor = wrap[wrap.length - 1] ?? cursor;
-  });
-
-  const tailEnd = Math.min(height - 10, cursor.y + Math.max(120, bend * 2));
-  if (tailEnd > cursor.y + 24) tail.push({ x: cursor.x, y: tailEnd });
-
+  const chosen = targets.find((box) => box.y >= focusY && box.w >= 72 && box.h >= 36);
+  if (!chosen) return { viewBox, line: "" };
   return {
     viewBox,
-    line: roundedPolyline(simplify([origin, ...tail]), Math.max(16, radius)),
+    line: roundedPolyline(simplify(cornerHook(chosen, Math.max(48, arm))), Math.max(16, radius)),
   };
 }

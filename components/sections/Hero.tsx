@@ -1,4 +1,5 @@
 import { Calendar, Check, Phone } from "lucide-react";
+import { LineArt } from "@/components/art/LineArt";
 import { Container } from "@/components/layout/Container";
 import { ButtonLink } from "@/components/links/ButtonLink";
 import { SiteLink } from "@/components/links/SiteLink";
@@ -30,7 +31,9 @@ export function Hero({
     <section className="pt-6 pb-10 lg:pt-20 lg:pb-24">
       <Container className="grid items-center gap-6 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col">
-          <span className="plant-anchor plant-anchor-slot mb-5 lg:mb-8" aria-hidden="true" />
+          <span className="plant-anchor plant-anchor-slot mb-5 lg:mb-8" aria-hidden="true">
+            <LineArt kind="butterfly" draw="static" thin className="block w-full" />
+          </span>
           <p className="type-eyebrow">{eyebrow}</p>
           <h1 className="type-display mt-4 lg:mt-6">
             {titleLines.map((line) => (

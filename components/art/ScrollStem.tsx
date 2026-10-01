@@ -101,6 +101,8 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       if (stemBox.width < 2 || stemBox.height < 2 || anchorBox.width < 2) return;
       const gap = Number.parseFloat(getComputedStyle(anchor).marginBottom) || 0;
       const leaf = readPx("--line-leaf");
+      const leafGap = readPx("--line-leaf-gap") || 24;
+      const butterflyGap = readPx("--line-butterfly-gap") || 16;
       const stroke = readPx("--line-stroke-stem");
       const bend = readPx("--line-bend");
       const container = host.querySelector<HTMLElement>(".mx-auto");
@@ -122,6 +124,8 @@ export function ScrollStem({ children }: { children: ReactNode }) {
         contentLeft.toFixed(0),
         contentRight.toFixed(0),
         leaf.toFixed(0),
+        leafGap.toFixed(0),
+        butterflyGap.toFixed(0),
         stroke.toFixed(0),
         bend.toFixed(0),
         String(checksum),
@@ -140,6 +144,8 @@ export function ScrollStem({ children }: { children: ReactNode }) {
             },
             gap,
             leaf,
+            leafGap,
+            butterflyGap,
             stroke,
             bend,
             contentLeft,

@@ -107,6 +107,9 @@
   --line-stroke-wing: 3.5px;
   /* Faint plant behind text and photos. */
   --line-opacity: 0.42;
+  /* Clear space between leaf boxes, and between a leaf and the butterfly. */
+  --line-leaf-gap: 24px;
+  --line-butterfly-gap: 16px;
   /* Lateral bow of the stem where a gap allows it. */
   --line-bend: 1.75rem;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
@@ -137,6 +140,7 @@
     --line-butterfly: 12.5rem;
     --line-stem: 1.65rem;
     --line-leaf: 5.5rem;
+    --line-leaf-gap: 16px;
     --line-stroke-stem: 11px;
     --line-stroke-vein: 4.5px;
     --line-stroke-wing: 3px;

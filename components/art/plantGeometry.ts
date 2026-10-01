@@ -189,10 +189,6 @@ function overlapsY(a: Box, y0: number, y1: number) {
   return bottomOf(a) > y0 && a.y < y1;
 }
 
-function intersects(a: Box, b: Box) {
-  return a.x < rightOf(b) && rightOf(a) > b.x && a.y < bottomOf(b) && bottomOf(a) > b.y;
-}
-
 function inflate(box: Box, pad: number): Box {
   return { x: box.x - pad, y: box.y - pad, w: box.w + pad * 2, h: box.h + pad * 2 };
 }
@@ -555,6 +551,13 @@ function leafParts(cx: number, baseY: number, length: number, width: number, lea
 
 type LeafTarget = { y: number; scale: number; lean: number; reach: number };
 
+type PlacedLeaf = { y: number; leaf: PlantLeaf; box: Box };
+
+function leafBlocked(box: Box, placed: PlacedLeaf[], butterfly: Box, leafGap: number, butterflyGap: number) {
+  if (boxGap(box, butterfly) < butterflyGap) return true;
+  return placed.some((spot) => boxGap(box, spot.box) < leafGap);
+}
+
 function channelAt(x: number, y: number, obstacles: Obstacle[], pageWidth: number) {
   let left = 8;
   let right = pageWidth - 8;
@@ -571,18 +574,19 @@ function channelAt(x: number, y: number, obstacles: Obstacle[], pageWidth: numbe
 function fitLeaf(
   points: Point[],
   obstacles: Obstacle[],
-  placed: Array<{ y: number }>,
+  placed: PlacedLeaf[],
   target: LeafTarget,
   leaf: number,
   pageWidth: number,
   height: number,
+  butterfly: Box,
+  leafGap: number,
+  butterflyGap: number,
 ) {
-  const minGap = Math.max(leaf * 1.05, 96);
   for (let delta = 0; delta <= target.reach; delta += 22) {
     const signs = delta === 0 ? [0] : [1, -1];
     for (const sign of signs) {
       const y = target.y + sign * delta;
-      if (placed.some((spot) => Math.abs(spot.y - y) < minGap)) continue;
       const stem = pointAtY(points, y);
       if (stem[1] < 48 || stem[1] > height - 12) continue;
       const length = leaf * target.scale;
@@ -603,10 +607,12 @@ function fitLeaf(
       const half = Math.min(stem[0] - left, right - stem[0]);
       const width = Math.min(leaf * 0.78, half * 2);
       if (width < Math.max(42, leaf * 0.46)) continue;
-      const box = { x: stem[0] - width / 2, y: stem[1] - length, w: width, h: length };
+      const parts = leafParts(stem[0], stem[1], length, width, target.lean);
+      const box = leafBounds(parts);
       if (box.y < 0 || bottomOf(box) > height + 4) continue;
-      if (obstacles.some((obstacle) => intersects(inflate(box, 2), obstacle))) continue;
-      return { y: stem[1], leaf: leafParts(stem[0], stem[1], length, width, target.lean) };
+      if (leafBlocked(box, placed, butterfly, leafGap, butterflyGap)) continue;
+      if (obstacles.some((obstacle) => boxGap(box, obstacle) < 2)) continue;
+      return { y: stem[1], leaf: parts, box };
     }
   }
   return null;
@@ -614,33 +620,51 @@ function fitLeaf(
 
 function forcedLeaf(
   points: Point[],
-  placed: Array<{ y: number }>,
+  placed: PlacedLeaf[],
   target: LeafTarget,
   leaf: number,
   pageWidth: number,
   height: number,
+  butterfly: Box,
+  leafGap: number,
+  butterflyGap: number,
 ) {
-  const gap = Math.max(92, leaf * 0.92);
+  const gap = Math.max(leafGap + leaf * 0.85, leaf * 0.92);
   let y = target.y;
-  for (const spot of placed) {
-    if (Math.abs(spot.y - y) < gap) y = spot.y + gap;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (y > height - 16) return null;
+    const stem = pointAtY(points, y);
+    const length = Math.min(140, Math.max(72, leaf * target.scale));
+    const width = Math.min(90, Math.max(48, leaf * 0.56));
+    const half = width / 2;
+    const cx = Math.min(pageWidth - half - 14, Math.max(half + 14, stem[0]));
+    const parts = leafParts(cx, stem[1], length, width, target.lean, false);
+    const box = leafBounds(parts);
+    if (!leafBlocked(box, placed, butterfly, leafGap, butterflyGap)) {
+      return { y: stem[1], leaf: parts, box };
+    }
+    y = Math.max(stem[1], y) + gap;
   }
-  if (y > height - 16) return null;
-  const stem = pointAtY(points, y);
-  const length = Math.min(140, Math.max(72, leaf * target.scale));
-  const width = Math.min(90, Math.max(48, leaf * 0.56));
-  const half = width / 2;
-  const cx = Math.min(pageWidth - half - 14, Math.max(half + 14, stem[0]));
-  return { y: stem[1], leaf: leafParts(cx, stem[1], length, width, target.lean, false) };
+  return null;
 }
 
 /** Two leaves through the middle, five packed at the footer so one lower screen is lusher. */
-function spreadLeaves(points: Point[], obstacles: Obstacle[], leaf: number, pageWidth: number, height: number) {
+function spreadLeaves(
+  points: Point[],
+  obstacles: Obstacle[],
+  leaf: number,
+  pageWidth: number,
+  height: number,
+  butterfly: Box,
+  leafGap: number,
+  butterflyGap: number,
+  already: PlacedLeaf[],
+) {
   const first = points[0];
   const last = points[points.length - 1];
-  if (!first || !last) return [] as Array<{ y: number; leaf: PlantLeaf }>;
+  if (!first || !last) return [] as PlacedLeaf[];
   const span = Math.max(1, last[1] - first[1]);
-  const pitch = Math.max(100, leaf * 1.05);
+  const pitch = Math.max(leafGap + leaf, leaf * 1.15);
   const lowerEnd = last[1] - leaf * 0.3;
   const targets: LeafTarget[] = [
     { y: first[1] + span * 0.3, scale: 0.92, lean: 0.75, reach: 280 },
@@ -652,15 +676,15 @@ function spreadLeaves(points: Point[], obstacles: Obstacle[], leaf: number, page
       reach: 140,
     })),
   ];
-  const placed: Array<{ y: number; leaf: PlantLeaf }> = [];
+  const placed: PlacedLeaf[] = [...already];
   const photos = obstacles.filter((obstacle) => obstacle.kind === "photo");
   for (const target of targets) {
-    const spot = fitLeaf(points, obstacles, placed, target, leaf, pageWidth, height)
-      ?? fitLeaf(points, photos, placed, target, leaf, pageWidth, height)
-      ?? forcedLeaf(points, placed, target, leaf, pageWidth, height);
+    const spot = fitLeaf(points, obstacles, placed, target, leaf, pageWidth, height, butterfly, leafGap, butterflyGap)
+      ?? fitLeaf(points, photos, placed, target, leaf, pageWidth, height, butterfly, leafGap, butterflyGap)
+      ?? forcedLeaf(points, placed, target, leaf, pageWidth, height, butterfly, leafGap, butterflyGap);
     if (spot) placed.push(spot);
   }
-  return placed;
+  return placed.slice(already.length);
 }
 
 function calmRoute(points: Point[], pageWidth: number, stroke: number) {
@@ -703,6 +727,99 @@ function pointAtY(points: Point[], y: number) {
   return best;
 }
 
+function arcTable(points: Point[]) {
+  const cum = [0];
+  for (let i = 1; i < points.length; i += 1) {
+    const prev = points[i - 1] ?? points[0] ?? [0, 0];
+    const cur = points[i] ?? prev;
+    cum.push((cum[i - 1] ?? 0) + Math.hypot(cur[0] - prev[0], cur[1] - prev[1]));
+  }
+  return cum;
+}
+
+function pointAtArc(points: Point[], cum: number[], dist: number): Point {
+  const first = points[0] ?? [0, 0];
+  if (points.length < 2) return first;
+  const total = cum[cum.length - 1] ?? 0;
+  const target = Math.max(0, Math.min(total, dist));
+  for (let i = 1; i < points.length; i += 1) {
+    const end = cum[i] ?? 0;
+    if (end + 0.01 < target) continue;
+    const start = cum[i - 1] ?? 0;
+    const prev = points[i - 1] ?? first;
+    const cur = points[i] ?? prev;
+    const span = end - start;
+    const t = span <= 0 ? 0 : (target - start) / span;
+    return [prev[0] + (cur[0] - prev[0]) * t, prev[1] + (cur[1] - prev[1]) * t];
+  }
+  return points[points.length - 1] ?? first;
+}
+
+function includePoint(bounds: { minX: number; minY: number; maxX: number; maxY: number }, x: number, y: number) {
+  bounds.minX = Math.min(bounds.minX, x);
+  bounds.minY = Math.min(bounds.minY, y);
+  bounds.maxX = Math.max(bounds.maxX, x);
+  bounds.maxY = Math.max(bounds.maxY, y);
+}
+
+/** Tight bounds of the drawn curve, matching the on-screen leaf box. */
+function pathBounds(d: string): Box | null {
+  const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  let cx = 0;
+  let cy = 0;
+  for (const command of toAbsolute(d)) {
+    if (command.t === "M" || command.t === "L") {
+      cx = command.p[0] ?? cx;
+      cy = command.p[1] ?? cy;
+      includePoint(bounds, cx, cy);
+    } else if (command.t === "C") {
+      const x1 = command.p[0] ?? cx;
+      const y1 = command.p[1] ?? cy;
+      const x2 = command.p[2] ?? cx;
+      const y2 = command.p[3] ?? cy;
+      const x = command.p[4] ?? cx;
+      const y = command.p[5] ?? cy;
+      const steps = 12;
+      for (let i = 1; i <= steps; i += 1) {
+        const t = i / steps;
+        const u = 1 - t;
+        includePoint(
+          bounds,
+          u * u * u * cx + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x,
+          u * u * u * cy + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y,
+        );
+      }
+      cx = x;
+      cy = y;
+    }
+  }
+  if (!Number.isFinite(bounds.minX)) return null;
+  return { x: bounds.minX, y: bounds.minY, w: bounds.maxX - bounds.minX, h: bounds.maxY - bounds.minY };
+}
+
+function unionBox(boxes: Array<Box | null>): Box {
+  const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  for (const box of boxes) {
+    if (!box || box.w <= 0 || box.h <= 0) continue;
+    includePoint(bounds, box.x, box.y);
+    includePoint(bounds, box.x + box.w, box.y + box.h);
+  }
+  if (!Number.isFinite(bounds.minX)) return { x: 0, y: 0, w: 0, h: 0 };
+  return { x: bounds.minX, y: bounds.minY, w: bounds.maxX - bounds.minX, h: bounds.maxY - bounds.minY };
+}
+
+function leafBounds(leaf: PlantLeaf): Box {
+  return unionBox([pathBounds(leaf.outline), pathBounds(leaf.midrib), ...leaf.veins.map((vein) => pathBounds(vein))]);
+}
+
+/** Distance between two boxes. Zero when they intersect or touch. */
+function boxGap(a: Box, b: Box) {
+  const dx = Math.max(a.x - rightOf(b), b.x - rightOf(a));
+  const dy = Math.max(a.y - bottomOf(b), b.y - bottomOf(a));
+  if (dx < 0 && dy < 0) return 0;
+  return Math.hypot(Math.max(0, dx), Math.max(0, dy));
+}
+
 function takeJoin(points: Point[], length: number) {
   const first = points[0];
   if (!first || points.length < 2) return { join: points, rest: points };
@@ -726,21 +843,46 @@ function takeJoin(points: Point[], length: number) {
 }
 
 
-function heroSprig(points: Point[], anchor: Box, leaf: number, pageWidth: number) {
-  const joinX = anchor.x + anchor.w * 0.5;
-  const joinY = anchor.y + anchor.h - 6;
-  const sign = joinX < pageWidth * 0.5 ? 1 : -1;
+/** A few leaves on the open stem of the first screen, each clear of the butterfly and of each other. */
+function heroSprig(
+  points: Point[],
+  anchor: Box,
+  leaf: number,
+  pageWidth: number,
+  butterfly: Box,
+  photos: Box[],
+  leafGap: number,
+  butterflyGap: number,
+) {
+  const cum = arcTable(points);
+  const total = cum[cum.length - 1] ?? 0;
+  const sign = anchor.x + anchor.w * 0.5 < pageWidth * 0.5 ? 1 : -1;
   const leans = [sign * 0.95, sign * 0.15, sign * -0.8];
-  return [0.02, 0.4, 0.78].map((t, index) => {
-    const y = joinY + leaf * 0.62 * t;
-    const stem = pointAtY(points, y);
-    const length = Math.min(120, Math.max(64, leaf * (0.94 + index * 0.03)));
-    const width = Math.min(96, Math.max(52, leaf * 0.62));
-    const half = width / 2;
-    const cx = Math.min(pageWidth - half - 16, Math.max(half + 16, stem[0]));
-    const lean = leans[index] ?? sign;
-    return { y: stem[1], leaf: leafParts(cx, stem[1], length, width, lean, true) };
-  });
+  const placed: PlacedLeaf[] = [];
+  const limitY = butterfly.y + butterfly.h + leaf * 4.5;
+  let cursor = 0;
+  for (let index = 0; index < 3; index += 1) {
+    let found: (PlacedLeaf & { dist: number }) | null = null;
+    for (let dist = cursor; dist <= total; dist += 8) {
+      const stem = pointAtArc(points, cum, dist);
+      if (stem[1] > limitY) break;
+      const length = Math.min(120, Math.max(64, leaf * (0.94 + index * 0.03)));
+      const width = Math.min(96, Math.max(52, leaf * 0.62));
+      const half = width / 2;
+      const cx = Math.min(pageWidth - half - 16, Math.max(half + 16, stem[0]));
+      const parts = leafParts(cx, stem[1], length, width, leans[index] ?? sign, true);
+      const box = leafBounds(parts);
+      if (box.y < 0 || box.h < 8) continue;
+      if (leafBlocked(box, placed, butterfly, leafGap, butterflyGap)) continue;
+      if (photos.some((photo) => boxGap(box, photo) < 2)) continue;
+      found = { y: stem[1], leaf: parts, box, dist };
+      break;
+    }
+    if (!found) break;
+    placed.push(found);
+    cursor = found.dist + 8;
+  }
+  return placed;
 }
 
 export function buildPlant({
@@ -749,6 +891,8 @@ export function buildPlant({
   anchor,
   gap,
   leaf,
+  leafGap,
+  butterflyGap,
   stroke,
   bend,
   contentLeft,
@@ -760,6 +904,8 @@ export function buildPlant({
   anchor: Box;
   gap: number;
   leaf: number;
+  leafGap: number;
+  butterflyGap: number;
   stroke: number;
   bend: number;
   contentLeft: number;
@@ -771,6 +917,7 @@ export function buildPlant({
     anchor.y + ((y - vb.y) / vb.h) * anchor.h,
   ];
   const wings = butterfly.paths.map((d) => placePath(d, map));
+  const butterflyBox = unionBox(wings.map((d) => pathBounds(d)));
   const photos = obstacles.filter((obstacle) => obstacle.kind === "photo");
   const blocks = obstacles.filter((obstacle) => obstacle.kind === "block");
   const pads = [
@@ -796,10 +943,18 @@ export function buildPlant({
   const joined = takeJoin(calmed, Math.max(240, leaf * 1.8));
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
   const spine = curve(joined.rest);
-  const hero = heroSprig(calmed, anchor, leaf, width);
-  const lower = spreadLeaves(joined.rest, obstacles, leaf, width, height).filter(
-    (spot) => spot.y > anchor.y + anchor.h + leaf * 0.35,
-  );
+  const hero = heroSprig(calmed, anchor, leaf, width, butterflyBox, photos, leafGap, butterflyGap);
+  const lower = spreadLeaves(
+    joined.rest,
+    obstacles,
+    leaf,
+    width,
+    height,
+    butterflyBox,
+    leafGap,
+    butterflyGap,
+    hero,
+  ).filter((spot) => spot.y > butterflyBox.y + butterflyBox.h + leaf * 0.35 && boxGap(spot.box, butterflyBox) >= butterflyGap);
   const leaves = [...hero, ...lower];
 
   return {

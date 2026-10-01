@@ -444,16 +444,20 @@ function routeStem({
   const tail = bottomOf(anchor);
   const joinX = anchor.x + anchor.w * 0.5;
   const joinY = tail - Math.min(8, stroke * 0.35);
-  const dropY = Math.min(height - stroke, tail + Math.max(4, Math.min(gap * 0.28, 12)));
+  const sign = joinX < (contentLeft + contentRight) * 0.5 ? 1 : -1;
+  const reach = clamp(Math.max(bend * 4.5, 120), 96, Math.min(210, Math.max(96, (contentRight - contentLeft) * 0.28)));
+  const bowX = clamp(joinX + sign * reach, stroke + 20, width - stroke - 20);
+  const bowY = joinY + Math.max(88, gap * 0.35, bend * 2.4);
   const points: Point[] = [
     [joinX, joinY],
-    [joinX, dropY],
+    [clamp(joinX + sign * reach * 0.62, stroke + 12, width - stroke - 12), joinY + Math.max(40, bend * 1.15)],
+    [bowX, bowY],
   ];
   const used: Portal[] = [];
-  let x = joinX;
-  let y = dropY;
+  let x = bowX;
+  let y = bowY;
   let lastBow = -1000;
-  const endY = Math.max(dropY + 8, height - stroke);
+  const endY = Math.max(bowY + 8, height - stroke);
   const step = 48;
 
   while (y < endY - 1) {
@@ -512,63 +516,115 @@ function routeStem({
   return { points: resample(points), portals: used };
 }
 
-function leafOutline(cx: number, baseY: number, length: number, width: number) {
+function leafOutline(cx: number, baseY: number, length: number, width: number, lean: number) {
+  const tipX = cx + width * 0.22 * lean;
   const tipY = baseY - length;
   const hw = width / 2;
+  const bend = width * 0.16 * lean;
   return [
     `M${round(cx)} ${round(baseY)}`,
-    `C${round(cx + hw * 0.2)} ${round(baseY - length * 0.08)} ${round(cx + hw)} ${round(baseY - length * 0.32)} ${round(cx + hw * 0.7)} ${round(baseY - length * 0.58)}`,
-    `C${round(cx + hw * 0.38)} ${round(baseY - length * 0.84)} ${round(cx + hw * 0.1)} ${round(tipY + length * 0.06)} ${round(cx)} ${round(tipY)}`,
-    `C${round(cx - hw * 0.1)} ${round(tipY + length * 0.06)} ${round(cx - hw * 0.38)} ${round(baseY - length * 0.84)} ${round(cx - hw * 0.7)} ${round(baseY - length * 0.58)}`,
-    `C${round(cx - hw)} ${round(baseY - length * 0.32)} ${round(cx - hw * 0.2)} ${round(baseY - length * 0.08)} ${round(cx)} ${round(baseY)}`,
+    `C${round(cx + hw * 0.28 + bend)} ${round(baseY - length * 0.07)} ${round(cx + hw * 0.98 + bend * 0.35)} ${round(baseY - length * 0.3)} ${round(cx + hw * 0.7 + bend)} ${round(baseY - length * 0.56)}`,
+    `C${round(cx + hw * 0.36 + bend)} ${round(baseY - length * 0.82)} ${round(tipX + width * 0.05)} ${round(tipY + length * 0.1)} ${round(tipX)} ${round(tipY)}`,
+    `C${round(tipX - width * 0.07)} ${round(tipY + length * 0.12)} ${round(cx - hw * 0.5)} ${round(baseY - length * 0.78)} ${round(cx - hw * 0.76)} ${round(baseY - length * 0.48)}`,
+    `C${round(cx - hw * 0.96)} ${round(baseY - length * 0.24)} ${round(cx - hw * 0.16)} ${round(baseY - length * 0.05)} ${round(cx)} ${round(baseY - length * 0.02)}`,
     "Z",
   ].join("");
 }
 
-function leafParts(cx: number, baseY: number, length: number, width: number): PlantLeaf {
-  const hw = width / 2;
+function leafParts(cx: number, baseY: number, length: number, width: number, lean: number): PlantLeaf {
+  const tipX = cx + width * 0.22 * lean;
   const tipY = baseY - length;
   const midrib = [
     `M${round(cx)} ${round(baseY)}`,
-    `C${round(cx + hw * 0.08)} ${round(baseY - length * 0.34)} ${round(cx - hw * 0.04)} ${round(baseY - length * 0.68)} ${round(cx)} ${round(tipY)}`,
+    `C${round(cx + width * 0.1 * lean)} ${round(baseY - length * 0.34)} ${round(cx + width * 0.16 * lean)} ${round(baseY - length * 0.68)} ${round(tipX)} ${round(tipY)}`,
   ].join("");
-  const veins = [0.38, 0.52, 0.66, 0.8].map((t, index) => {
-    const side = index % 2 === 0 ? 1 : -1;
-    const y = baseY - length * t;
-    const reach = hw * Math.sin(Math.PI * t) * 0.72;
-    const ex = cx + side * reach;
-    return `M${round(cx)} ${round(y)}C${round(cx + side * reach * 0.35)} ${round(y - length * 0.04)} ${round(cx + side * reach * 0.72)} ${round(y + length * 0.01)} ${round(ex)} ${round(y - length * 0.015)}`;
-  });
-  return { outline: leafOutline(cx, baseY, length, width), midrib, veins };
+  return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins: [] };
 }
 
-function placeLeaves(
-  portals: Portal[],
+type LeafTarget = { y: number; scale: number; lean: number; reach: number };
+
+function channelAt(x: number, y: number, obstacles: Obstacle[], pageWidth: number) {
+  let left = 8;
+  let right = pageWidth - 8;
+  for (const box of obstacles) {
+    if (y < box.y + 1 || y > bottomOf(box) - 1) continue;
+    if (x >= box.x && x <= rightOf(box)) return null;
+    if (rightOf(box) <= x) left = Math.max(left, rightOf(box) + 6);
+    else right = Math.min(right, box.x - 6);
+  }
+  if (right - left < 40) return null;
+  return { left, right };
+}
+
+function fitLeaf(
   points: Point[],
   obstacles: Obstacle[],
+  placed: Array<{ y: number }>,
+  target: LeafTarget,
   leaf: number,
-  stroke: number,
+  pageWidth: number,
   height: number,
 ) {
-  const spots: { y: number; leaf: PlantLeaf }[] = [];
-  const ordered = [...portals].sort((a, b) => a.y0 - b.y0);
-  for (const portal of ordered) {
-    if (spots.length === 3) break;
-    const room = portal.gap - stroke - 8;
-    if (room < 36 || portal.y1 - portal.y0 < 72) continue;
-    const width = Math.min(leaf * 0.78, room);
-    const length = Math.min(leaf, (portal.y1 - portal.y0) * 0.55);
-    if (width < Math.max(36, leaf * 0.55) || length < Math.min(leaf, 72)) continue;
-    const baseY = Math.min(portal.y1 - 6, portal.y0 + length + (portal.y1 - portal.y0) * 0.12);
-    const box = inflate({ x: portal.x - width / 2, y: baseY - length, w: width, h: length }, stroke / 2);
-    if (box.y < 0 || bottomOf(box) > height) continue;
-    if (obstacles.some((obstacle) => intersects(box, obstacle))) continue;
-    if (spots.some((spot) => Math.abs(spot.y - baseY) < height * 0.14)) continue;
-    const onStem = points.some((point) => Math.abs(point[0] - portal.x) < 22 && Math.abs(point[1] - baseY) < 80);
-    if (!onStem) continue;
-    spots.push({ y: baseY, leaf: leafParts(portal.x, baseY, length, width) });
+  const minGap = Math.max(leaf * 1.05, 96);
+  for (let delta = 0; delta <= target.reach; delta += 22) {
+    const signs = delta === 0 ? [0] : [1, -1];
+    for (const sign of signs) {
+      const y = target.y + sign * delta;
+      if (placed.some((spot) => Math.abs(spot.y - y) < minGap)) continue;
+      const stem = pointAtY(points, y);
+      if (stem[1] < 48 || stem[1] > height - 12) continue;
+      const length = leaf * target.scale;
+      const samples = [0.22, 0.5, 0.78].map((t) => stem[1] - length * t);
+      let left = 8;
+      let right = pageWidth - 8;
+      let blocked = false;
+      for (const sample of samples) {
+        const channel = channelAt(stem[0], sample, obstacles, pageWidth);
+        if (!channel) {
+          blocked = true;
+          break;
+        }
+        left = Math.max(left, channel.left);
+        right = Math.min(right, channel.right);
+      }
+      if (blocked || right - left < 40) continue;
+      const half = Math.min(stem[0] - left, right - stem[0]);
+      const width = Math.min(leaf * 0.78, half * 2);
+      if (width < Math.max(42, leaf * 0.46)) continue;
+      const box = { x: stem[0] - width / 2, y: stem[1] - length, w: width, h: length };
+      if (box.y < 0 || bottomOf(box) > height + 4) continue;
+      if (obstacles.some((obstacle) => intersects(inflate(box, 2), obstacle))) continue;
+      return { y: stem[1], leaf: leafParts(stem[0], stem[1], length, width, target.lean) };
+    }
   }
-  return spots;
+  return null;
+}
+
+/** One leaf up high, two through the middle, four packed toward the footer. */
+function spreadLeaves(points: Point[], obstacles: Obstacle[], leaf: number, pageWidth: number, height: number) {
+  const first = points[0];
+  const last = points[points.length - 1];
+  if (!first || !last) return [] as Array<{ y: number; leaf: PlantLeaf }>;
+  const span = Math.max(1, last[1] - first[1]);
+  const pitch = Math.min(span * 0.06, Math.max(leaf * 2.05, 210));
+  const lowerEnd = first[1] + span * 0.9;
+  const targets: LeafTarget[] = [
+    { y: first[1] + span * 0.2, scale: 0.9, lean: 0.75, reach: 360 },
+    { y: first[1] + span * 0.38, scale: 1, lean: -0.8, reach: 320 },
+    { y: first[1] + span * 0.5, scale: 0.84, lean: 0.55, reach: 280 },
+    ...[3, 2, 1, 0].map((step, index) => ({
+      y: lowerEnd - pitch * step,
+      scale: 0.86 + (index % 3) * 0.06,
+      lean: index % 2 === 0 ? 0.7 : -0.62,
+      reach: 160,
+    })),
+  ];
+  const placed: Array<{ y: number; leaf: PlantLeaf }> = [];
+  for (const target of targets) {
+    const spot = fitLeaf(points, obstacles, placed, target, leaf, pageWidth, height);
+    if (spot) placed.push(spot);
+  }
+  return placed;
 }
 
 function calmRoute(points: Point[], pageWidth: number, stroke: number) {
@@ -585,10 +641,10 @@ function calmRoute(points: Point[], pageWidth: number, stroke: number) {
     const pool = near.length > 0 ? near : [pointAtY(forward, y)];
     const xs = pool.map((point) => point[0]).sort((a, b) => a - b);
     const mid = xs[Math.floor(xs.length / 2)] ?? first[0];
-    const sway = Math.sin((y - first[1]) / 260) * 32;
+    const sway = Math.sin((y - first[1]) / 220) * Math.min(64, pageWidth * 0.05);
     const target = Math.min(maxX, Math.max(minX, mid + sway));
     const prev = out[out.length - 1] ?? first;
-    const maxDx = step * 0.48;
+    const maxDx = step * 1.15;
     const x = prev[0] + Math.max(-maxDx, Math.min(maxDx, target - prev[0]));
     out.push([Math.min(maxX, Math.max(minX, x)), y]);
   }
@@ -630,58 +686,6 @@ function takeJoin(points: Point[], length: number) {
   }
   const mid = Math.max(1, Math.min(points.length - 1, 3));
   return { join: points.slice(0, mid + 1), rest: points.slice(mid) };
-}
-
-function splitAt(points: Point[], cuts: number[]) {
-  const segments: Point[][] = [];
-  let start = 0;
-  for (const y of [...cuts].sort((a, b) => a - b)) {
-    if (start >= points.length - 1) break;
-    let idx = start + 1;
-    let best = Infinity;
-    for (let i = start + 1; i < points.length - 1; i += 1) {
-      const dist = Math.abs((points[i]?.[1] ?? 0) - y);
-      if (dist < best) {
-        best = dist;
-        idx = i;
-      }
-    }
-    if (idx <= start) continue;
-    const slice = points.slice(start, idx + 1);
-    if (slice.length >= 2) segments.push(slice);
-    start = idx;
-  }
-  const tail = points.slice(start);
-  if (tail.length >= 2) segments.push(tail);
-  return segments;
-}
-
-function extraLeaves(
-  points: Point[],
-  photos: Box[],
-  leaf: number,
-  stroke: number,
-  pageWidth: number,
-  taken: number[],
-) {
-  const first = points[0];
-  const last = points[points.length - 1];
-  if (!first || !last) return [] as { y: number; leaf: PlantLeaf }[];
-  const span = Math.max(1, last[1] - first[1]);
-  const added: { y: number; leaf: PlantLeaf }[] = [];
-  for (const t of [0.18, 0.42, 0.8]) {
-    if (taken.length + added.length >= 3) break;
-    const y = first[1] + span * t;
-    if (taken.some((spot) => Math.abs(spot - y) < span * 0.14)) continue;
-    const stem = pointAtY(points, y);
-    const available = Math.min(stem[0], pageWidth - stem[0]) * 2 - stroke;
-    const width = Math.min(leaf * 0.9, available);
-    if (width < leaf * 0.62) continue;
-    const box = inflate({ x: stem[0] - width / 2, y: stem[1] - leaf, w: width, h: leaf }, 2);
-    if (photos.some((photo) => intersects(box, photo))) continue;
-    added.push({ y: stem[1], leaf: leafParts(stem[0], stem[1], leaf, width) });
-  }
-  return added;
 }
 
 export function buildPlant({
@@ -735,23 +739,15 @@ export function buildPlant({
   const maxX = Math.max(minX, width - stroke);
   const calmed = calmRoute(routed.points, width, stroke);
   const joined = takeJoin(calmed, Math.min(120, Math.max(84, leaf * 0.75)));
-  const leafSpots = placeLeaves(routed.portals, calmed, obstacles, leaf, stroke, height);
-  const leaves = [...leafSpots, ...extraLeaves(joined.rest, photos, leaf, stroke, width, leafSpots.map((spot) => spot.y))]
-    .sort((a, b) => a.y - b.y)
-    .slice(0, 3);
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
-  const segments = splitAt(
-    joined.rest,
-    leaves.map((spot) => spot.y),
-  )
-    .map((segment) => curve(segment))
-    .filter((d) => d.length > 0);
+  const spine = curve(joined.rest);
+  const leaves = spreadLeaves(joined.rest, obstacles, leaf, width, height);
 
   return {
     viewBox: `0 0 ${round(width)} ${round(height)}`,
     wings,
     join: curve(joined.join),
-    segments: segments.length > 0 ? segments : [curve(joined.rest)].filter((d) => d.length > 0),
+    segments: spine ? [spine] : [],
     leaves: leaves.map((spot) => spot.leaf),
   };
 }

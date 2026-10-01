@@ -96,22 +96,27 @@
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
   --line-butterfly: 18rem;
   --line-stem: 2.75rem;
-  --line-leaf: 7.25rem;
-  /* The plant overlay runs the full page and continues into the footer. */
-  --page-stem-footer: 34rem;
+  --line-leaf: 2.75rem;
+  /* The line overlay runs the full page and continues a short way into the footer. */
+  --page-stem-footer: 12rem;
   /* Share of the stem dash still hidden at scroll 0, so the first screen shows the start. */
   --stem-shown-start: 0.7;
-  /* Share of the short join still hidden at scroll 0. The long stem starts hidden. */
-  --plant-join-hidden: 0.74;
-  /* On-screen stroke. The plant viewBox is 1 CSS pixel per user unit. */
-  --line-stroke-stem: 15px;
-  --line-stroke-vein: 5.5px;
-  --line-stroke-wing: 3.5px;
-  /* Faint plant behind text and photos. */
-  --line-opacity: 0.42;
-  /* Clear space between leaf boxes, and between a leaf and the butterfly. */
-  --line-leaf-gap: 24px;
+  /* The short opening stroke is fully present. The wrapping continuation starts hidden. */
+  --plant-join-hidden: 0;
+  /* On-screen stroke. The line viewBox is 1 CSS pixel per user unit. */
+  --line-stroke-stem: 2.5px;
+  --line-stroke-vein: 1.5px;
+  --line-stroke-wing: 2.5px;
+  /* Faint line beside text and photos. */
+  --line-opacity: 0.47;
+  /* Clear space between the few leaves on the line. */
+  --line-leaf-gap: 7rem;
   --line-butterfly-gap: 16px;
+  /* Opening stroke, and the gap/hook where the line turns around a block. */
+  --line-join: 8.5rem;
+  --line-anchor-h: 1.75rem;
+  --line-wrap-gap: 1.25rem;
+  --line-hook: 4.5rem;
   /* Lateral bow of the stem where a gap allows it. */
   --line-bend: 1.75rem;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
@@ -141,11 +146,14 @@
     --header-h: 4rem;
     --line-butterfly: 12.5rem;
     --line-stem: 1.65rem;
-    --line-leaf: 5.5rem;
-    --line-leaf-gap: 16px;
-    --line-stroke-stem: 11px;
-    --line-stroke-vein: 4.5px;
-    --line-stroke-wing: 3px;
+    --line-leaf: 2.25rem;
+    --line-leaf-gap: 5.5rem;
+    --line-stroke-stem: 2px;
+    --line-stroke-vein: 1.25px;
+    --line-stroke-wing: 2px;
     --line-bend: 1.15rem;
+    --line-join: 6.5rem;
+    --line-hook: 3rem;
+    --line-wrap-gap: 0.875rem;
   }
 }

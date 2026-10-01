@@ -27,7 +27,7 @@ export function PrivacyBand({
         flowStem && "page-stem-band",
       )}
     >
-      <LineArt kind="vine" tone="onDark" className="pointer-events-none absolute inset-x-0 top-8" />
+      {flowStem ? null : <LineArt kind="vine" tone="onDark" className="pointer-events-none absolute inset-x-0 top-8" />}
       <Container className="relative grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col gap-8">
           <p className="type-eyebrow text-on-deep-2">{eyebrow}</p>
@@ -44,7 +44,7 @@ export function PrivacyBand({
             ))}
           </ul>
         </div>
-        <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" />
+        <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" className={flowStem ? "line-wrap" : undefined} />
       </Container>
     </section>
   );

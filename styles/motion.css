@@ -71,6 +71,9 @@
 
 .plant-anchor {
   display: block;
+  width: var(--line-join);
+  height: var(--line-anchor-h);
+  margin-bottom: var(--space-10);
 }
 
 .scroll-stem-host {
@@ -316,15 +319,6 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
   }
 }
 
-@keyframes plant-join-scroll {
-  from {
-    stroke-dashoffset: var(--plant-join-hidden);
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
 @keyframes plant-stem-scroll {
   from {
     stroke-dashoffset: 1;
@@ -336,15 +330,10 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
+    /* Opening stroke stays put. The wrap is hidden until the page moves. */
     html.motion-ready .plant-join {
-      stroke-dasharray: 1;
-      stroke-dashoffset: var(--plant-join-hidden);
-      animation-name: plant-join-scroll;
-      animation-duration: auto;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: scroll(root);
-      animation-range: 0% 8%;
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
     }
 
     html.motion-ready .plant-stem {
@@ -355,7 +344,7 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
-      animation-range: 8% 100%;
+      animation-range: 0% 62%;
     }
 
     html.motion-ready .plant-leaf-group :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
@@ -368,31 +357,13 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
       animation-timeline: scroll(root);
     }
 
-    /* Nothing but the short join is inked at scroll 0. Each leaf finishes before the next starts. */
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-outline { animation-range: 4% 9%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 9% 11%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-outline { animation-range: 11% 16%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 16% 19%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-outline { animation-range: 21% 26%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 26% 29%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(4 of .plant-leaf-group) .plant-leaf-outline { animation-range: 31% 36%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(4 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 36% 39%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(5 of .plant-leaf-group) .plant-leaf-outline { animation-range: 41% 46%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(5 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 46% 49%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(6 of .plant-leaf-group) .plant-leaf-outline { animation-range: 51% 56%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(6 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 56% 59%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(7 of .plant-leaf-group) .plant-leaf-outline { animation-range: 61% 66%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(7 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 66% 69%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(8 of .plant-leaf-group) .plant-leaf-outline { animation-range: 71% 76%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(8 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 76% 79%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(9 of .plant-leaf-group) .plant-leaf-outline { animation-range: 81% 86%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(9 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 86% 89%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(10 of .plant-leaf-group) .plant-leaf-outline { animation-range: 90% 94%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(10 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 94% 97%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(11 of .plant-leaf-group) .plant-leaf-outline { animation-range: 90% 94%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(11 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 94% 97%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(12 of .plant-leaf-group) .plant-leaf-outline { animation-range: 90% 94%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(12 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 94% 97%; }
+    /* Three leaves, far apart, after the opening stroke. */
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-outline { animation-range: 16% 24%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 23% 28%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-outline { animation-range: 36% 44%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 43% 48%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-outline { animation-range: 54% 62%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 60% 66%; }
   }
 }
 

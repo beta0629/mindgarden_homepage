@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
-import { buildPlant, type Obstacle, type PlantGeometry } from "@/components/art/plantGeometry";
+import { buildPlant, type Frame, type PlantGeometry } from "@/components/art/plantGeometry";
 
 function readPx(name: string) {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -13,31 +13,38 @@ function readPx(name: string) {
   return value;
 }
 
-function obstaclesIn(stem: HTMLElement) {
+function framesIn(host: HTMLElement, stem: HTMLElement) {
   const stemBox = stem.getBoundingClientRect();
-  const rel = (el: Element) => {
-    const box = el.getBoundingClientRect();
-    return {
-      x: box.left - stemBox.left,
-      y: box.top - stemBox.top,
-      w: box.width,
-      h: box.height,
-    };
-  };
   const visible = (el: HTMLElement) => {
     if (el.closest(".scroll-stem, .plant-anchor, .mobile-cta")) return false;
     const style = getComputedStyle(el);
     return style.display !== "none" && style.visibility !== "hidden";
   };
-  const photos = [...document.querySelectorAll<HTMLElement>(".media-frame, .map-frame")]
-    .filter(visible)
-    .map((el) => ({ ...rel(el), kind: "photo" as const }))
-    .filter((box) => box.w > 8 && box.h > 8);
-  const blocks = [...document.querySelectorAll<HTMLElement>("main h1, main h2, main h3, main p, main li, main blockquote, main figcaption, main a, main button, main article, footer h2, footer p, footer li, footer a")]
-    .filter(visible)
-    .map((el) => ({ ...rel(el), kind: "block" as const }))
-    .filter((box) => box.w > 8 && box.h > 8 && box.y < stemBox.height && box.y + box.h > 0);
-  return { photos, blocks, stemBox };
+  const frames: Frame[] = [];
+  host.querySelectorAll<HTMLElement>(".line-wrap").forEach((el) => {
+    if (!visible(el)) return;
+    const box = el.getBoundingClientRect();
+    const frame = {
+      x: box.left - stemBox.left,
+      y: box.top - stemBox.top,
+      w: box.width,
+      h: box.height,
+      approach: 0,
+    };
+    if (frame.w < 80 || frame.h < 80) return;
+    const section = el.closest("section");
+    const sectionTop = section ? section.getBoundingClientRect().top - stemBox.top : frame.y;
+    const band = Math.max(0, frame.y - sectionTop);
+    frame.approach = sectionTop + Math.max(20, Math.min(band * 0.55, Math.max(20, band - 28)));
+    const previous = frames[frames.length - 1];
+    if (previous && Math.abs(previous.y - frame.y) < 48) {
+      if (frame.w * frame.h > previous.w * previous.h) frames[frames.length - 1] = frame;
+      return;
+    }
+    frames.push(frame);
+  });
+  frames.sort((a, b) => a.y - b.y);
+  return { frames, stemBox };
 }
 
 function PlantPaths({
@@ -96,24 +103,17 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       const stem = host.querySelector<HTMLElement>(".scroll-stem");
       const anchor = host.querySelector<HTMLElement>(".plant-anchor");
       if (!stem || !anchor) return;
-      const { photos, blocks, stemBox } = obstaclesIn(stem);
+      const { frames, stemBox } = framesIn(host, stem);
       const anchorBox = anchor.getBoundingClientRect();
       if (stemBox.width < 2 || stemBox.height < 2 || anchorBox.width < 2) return;
-      const gap = Number.parseFloat(getComputedStyle(anchor).marginBottom) || 0;
       const leaf = readPx("--line-leaf");
-      const leafGap = readPx("--line-leaf-gap") || 24;
-      const butterflyGap = readPx("--line-butterfly-gap") || 16;
-      const stroke = readPx("--line-stroke-stem");
-      const bend = readPx("--line-bend");
-      const container = host.querySelector<HTMLElement>(".mx-auto");
-      const containerBox = container?.getBoundingClientRect();
-      const pad = container ? Number.parseFloat(getComputedStyle(container).paddingLeft) || 0 : 0;
-      const contentLeft = containerBox ? containerBox.left - stemBox.left + pad : pad;
-      const contentRight = containerBox ? containerBox.right - stemBox.left - pad : stemBox.width - pad;
-      const obstacles: Obstacle[] = [...photos, ...blocks];
-      let checksum = obstacles.length;
-      for (const box of obstacles) {
-        checksum = (checksum + Math.round(box.x) * 3 + Math.round(box.y) * 5 + Math.round(box.w) + Math.round(box.h) * 7) | 0;
+      const leafGap = readPx("--line-leaf-gap") || 96;
+      const radius = readPx("--radius-xl") || 32;
+      const gap = readPx("--line-wrap-gap") || 20;
+      const hook = readPx("--line-hook") || 64;
+      let checksum = frames.length;
+      for (const box of frames) {
+        checksum = (checksum + Math.round(box.x) * 3 + Math.round(box.y) * 5 + Math.round(box.w) + Math.round(box.h) * 7 + Math.round(box.approach)) | 0;
       }
       const nextSignature = [
         stemBox.width.toFixed(0),
@@ -121,13 +121,12 @@ export function ScrollStem({ children }: { children: ReactNode }) {
         anchorBox.left.toFixed(0),
         anchorBox.top.toFixed(0),
         anchorBox.width.toFixed(0),
-        contentLeft.toFixed(0),
-        contentRight.toFixed(0),
+        anchorBox.height.toFixed(0),
         leaf.toFixed(0),
         leafGap.toFixed(0),
-        butterflyGap.toFixed(0),
-        stroke.toFixed(0),
-        bend.toFixed(0),
+        radius.toFixed(0),
+        gap.toFixed(0),
+        hook.toFixed(0),
         String(checksum),
       ].join(":");
       if (nextSignature !== signature.current) {
@@ -142,15 +141,12 @@ export function ScrollStem({ children }: { children: ReactNode }) {
               w: anchorBox.width,
               h: anchorBox.height,
             },
+            frames,
+            radius,
             gap,
+            hook,
             leaf,
             leafGap,
-            butterflyGap,
-            stroke,
-            bend,
-            contentLeft,
-            contentRight,
-            obstacles,
           }),
         );
       }

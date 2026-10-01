@@ -32,7 +32,7 @@ export function FirstVisit({
   return (
     <section className="section-defer bg-sand py-section">
       <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-        <div className="relative">
+        <div className="line-wrap relative">
           {mark ? <LineArt kind="stem" className="absolute -left-2 top-0 hidden w-16 lg:block" /> : null}
           <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" className={mark ? "lg:ml-12" : undefined} />
         </div>

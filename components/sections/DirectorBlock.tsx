@@ -28,7 +28,7 @@ export function DirectorBlock({
           <SectionHeader eyebrow={eyebrow} title={`${role} ${name}`} />
           <p className="type-xs mt-6 text-ink-3">{imageNote}</p>
         </div>
-        <div className="flex flex-col gap-8 lg:col-span-7">
+        <div className="line-wrap flex flex-col gap-8 lg:col-span-7">
           <blockquote className="type-quote text-ink">{quote}</blockquote>
           <p className="type-sm font-semibold text-ink">{education}</p>
           <ul className="flex flex-col gap-3">

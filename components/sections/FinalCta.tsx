@@ -26,12 +26,14 @@ export function FinalCta({
 }) {
   return (
     <section className={cn("relative overflow-hidden bg-deep py-section text-on-deep", flowStem && "page-stem-band")}>
-      <LineArt
-        kind="butterfly"
-        tone="onDark"
-        faint
-        className="pointer-events-none absolute -right-8 bottom-0 size-final-art"
-      />
+      {flowStem ? null : (
+        <LineArt
+          kind="butterfly"
+          tone="onDark"
+          faint
+          className="pointer-events-none absolute -right-8 bottom-0 size-final-art"
+        />
+      )}
       <Container className="relative flex max-w-3xl flex-col items-start gap-8">
         <h2 className="type-h2 text-on-deep">{title}</h2>
         <p className="type-lead text-on-deep-2">{lead}</p>

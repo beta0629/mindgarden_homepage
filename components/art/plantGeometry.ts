@@ -8,6 +8,7 @@ export type PlantLeaf = {
   outline: string;
   midrib: string;
   veins: string[];
+  home: boolean;
 };
 
 export type PlantGeometry = {
@@ -446,7 +447,9 @@ function routeStem({
   const joinY = tail - Math.min(8, stroke * 0.35);
   const sign = joinX < (contentLeft + contentRight) * 0.5 ? 1 : -1;
   const reach = clamp(Math.max(bend * 4.5, 120), 96, Math.min(210, Math.max(96, (contentRight - contentLeft) * 0.28)));
-  const bowX = clamp(joinX + sign * reach, stroke + 20, width - stroke - 20);
+  const heroPhoto = photos.find((photo) => photo.y < tail + 120 && photo.x > joinX + 12);
+  const photoLimit = heroPhoto ? (sign > 0 ? heroPhoto.x - stroke * 2 : rightOf(heroPhoto) + stroke * 2) : width - stroke - 20;
+  const bowX = clamp(joinX + sign * reach, stroke + 20, sign > 0 ? Math.min(width - stroke - 20, photoLimit) : Math.max(stroke + 20, photoLimit));
   const bowY = joinY + Math.max(88, gap * 0.35, bend * 2.4);
   const points: Point[] = [
     [joinX, joinY],
@@ -531,14 +534,21 @@ function leafOutline(cx: number, baseY: number, length: number, width: number, l
   ].join("");
 }
 
-function leafParts(cx: number, baseY: number, length: number, width: number, lean: number): PlantLeaf {
+function leafParts(cx: number, baseY: number, length: number, width: number, lean: number, home = false): PlantLeaf {
   const tipX = cx + width * 0.22 * lean;
   const tipY = baseY - length;
   const midrib = [
     `M${round(cx)} ${round(baseY)}`,
     `C${round(cx + width * 0.1 * lean)} ${round(baseY - length * 0.34)} ${round(cx + width * 0.16 * lean)} ${round(baseY - length * 0.68)} ${round(tipX)} ${round(tipY)}`,
   ].join("");
-  return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins: [] };
+  const veins = [0.42, 0.62].map((t, index) => {
+    const side = index % 2 === 0 ? 1 : -1;
+    const y = baseY - length * t;
+    const reach = (width / 2) * Math.sin(Math.PI * t) * 0.7;
+    const ex = cx + side * reach + width * 0.08 * lean;
+    return `M${round(cx + width * 0.04 * lean)} ${round(y)}C${round(cx + side * reach * 0.45)} ${round(y - length * 0.03)} ${round(ex)} ${round(y + length * 0.01)} ${round(ex)} ${round(y - length * 0.02)}`;
+  });
+  return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins, home };
 }
 
 type LeafTarget = { y: number; scale: number; lean: number; reach: number };
@@ -620,8 +630,10 @@ function spreadLeaves(points: Point[], obstacles: Obstacle[], leaf: number, page
     })),
   ];
   const placed: Array<{ y: number; leaf: PlantLeaf }> = [];
+  const photos = obstacles.filter((obstacle) => obstacle.kind === "photo");
   for (const target of targets) {
-    const spot = fitLeaf(points, obstacles, placed, target, leaf, pageWidth, height);
+    const spot = fitLeaf(points, obstacles, placed, target, leaf, pageWidth, height)
+      ?? fitLeaf(points, photos, placed, target, leaf, pageWidth, height);
     if (spot) placed.push(spot);
   }
   return placed;
@@ -664,6 +676,23 @@ function pointAtY(points: Point[], y: number) {
     }
   }
   return best;
+}
+
+function heroSprig(points: Point[], anchor: Box, leaf: number, pageWidth: number) {
+  const joinX = anchor.x + anchor.w * 0.5;
+  const joinY = anchor.y + anchor.h - 6;
+  const sign = joinX < pageWidth * 0.5 ? 1 : -1;
+  const leans = [sign * 0.95, sign * 0.2, sign * -0.75];
+  return [0.05, 0.42, 0.78].map((t, index) => {
+    const y = joinY + leaf * 0.7 * t;
+    const stem = pointAtY(points, y);
+    const length = Math.min(140, Math.max(72, leaf * (0.94 + index * 0.03)));
+    const width = Math.min(96, Math.max(52, leaf * 0.64));
+    const lean = leans[index] ?? sign;
+    const half = width / 2;
+    const cx = Math.min(pageWidth - half - 18, Math.max(half + 18, stem[0]));
+    return { y: stem[1], leaf: leafParts(cx, stem[1], length, width, lean, true) };
+  });
 }
 
 function takeJoin(points: Point[], length: number) {
@@ -738,10 +767,14 @@ export function buildPlant({
   const minX = stroke;
   const maxX = Math.max(minX, width - stroke);
   const calmed = calmRoute(routed.points, width, stroke);
-  const joined = takeJoin(calmed, Math.min(120, Math.max(84, leaf * 0.75)));
+  const joined = takeJoin(calmed, Math.max(240, leaf * 1.8));
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
   const spine = curve(joined.rest);
-  const leaves = spreadLeaves(joined.rest, obstacles, leaf, width, height);
+  const hero = heroSprig(calmed, anchor, leaf, width);
+  const lower = spreadLeaves(joined.rest, obstacles, leaf, width, height).filter(
+    (spot) => spot.y > anchor.y + anchor.h + leaf * 0.35,
+  );
+  const leaves = [...hero, ...lower];
 
   return {
     viewBox: `0 0 ${round(width)} ${round(height)}`,

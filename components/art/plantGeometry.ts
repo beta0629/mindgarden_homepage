@@ -445,15 +445,15 @@ function routeStem({
   const tail = bottomOf(anchor);
   const joinX = anchor.x + anchor.w * 0.5;
   const joinY = tail - Math.min(8, stroke * 0.35);
-  const sign = joinX < (contentLeft + contentRight) * 0.5 ? 1 : -1;
-  const reach = clamp(Math.max(bend * 4.5, 120), 96, Math.min(210, Math.max(96, (contentRight - contentLeft) * 0.28)));
-  const heroPhoto = photos.find((photo) => photo.y < tail + 120 && photo.x > joinX + 12);
-  const photoLimit = heroPhoto ? (sign > 0 ? heroPhoto.x - stroke * 2 : rightOf(heroPhoto) + stroke * 2) : width - stroke - 20;
-  const bowX = clamp(joinX + sign * reach, stroke + 20, sign > 0 ? Math.min(width - stroke - 20, photoLimit) : Math.max(stroke + 20, photoLimit));
-  const bowY = joinY + Math.max(88, gap * 0.35, bend * 2.4);
+  const bowY = Math.min(height - stroke, tail + Math.max(4, Math.min(gap * 0.28, bend * 0.4)));
+  const heroPhoto = photos.find((photo) => bottomOf(photo) > joinY && photo.y < joinY + 900);
+  let bowX = joinX;
+  if (heroPhoto && heroPhoto.x > joinX + 48) bowX = heroPhoto.x - Math.max(36, stroke + 16);
+  else if (heroPhoto && rightOf(heroPhoto) < joinX - 48) bowX = rightOf(heroPhoto) + Math.max(36, stroke + 16);
+  bowX = clamp(bowX, stroke + 8, width - stroke - 8);
   const points: Point[] = [
     [joinX, joinY],
-    [clamp(joinX + sign * reach * 0.62, stroke + 12, width - stroke - 12), joinY + Math.max(40, bend * 1.15)],
+    [joinX, bowY],
     [bowX, bowY],
   ];
   const used: Portal[] = [];
@@ -541,12 +541,14 @@ function leafParts(cx: number, baseY: number, length: number, width: number, lea
     `M${round(cx)} ${round(baseY)}`,
     `C${round(cx + width * 0.1 * lean)} ${round(baseY - length * 0.34)} ${round(cx + width * 0.16 * lean)} ${round(baseY - length * 0.68)} ${round(tipX)} ${round(tipY)}`,
   ].join("");
-  const veins = [0.42, 0.62].map((t, index) => {
+  const veins = [0.32, 0.46, 0.6, 0.74].map((t, index) => {
     const side = index % 2 === 0 ? 1 : -1;
     const y = baseY - length * t;
-    const reach = (width / 2) * Math.sin(Math.PI * t) * 0.7;
-    const ex = cx + side * reach + width * 0.08 * lean;
-    return `M${round(cx + width * 0.04 * lean)} ${round(y)}C${round(cx + side * reach * 0.45)} ${round(y - length * 0.03)} ${round(ex)} ${round(y + length * 0.01)} ${round(ex)} ${round(y - length * 0.02)}`;
+    const along = cx + width * 0.1 * lean * t;
+    const reach = (width / 2) * Math.sin(Math.PI * t) * 0.74 * side;
+    const ex = along + reach;
+    const ey = y - length * 0.012;
+    return `M${round(along)} ${round(y)}C${round(along + reach * 0.38)} ${round(y - length * 0.035)} ${round(along + reach * 0.74)} ${round(y + length * 0.018)} ${round(ex)} ${round(ey)}`;
   });
   return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins, home };
 }
@@ -610,30 +612,52 @@ function fitLeaf(
   return null;
 }
 
-/** One leaf up high, two through the middle, four packed toward the footer. */
+function forcedLeaf(
+  points: Point[],
+  placed: Array<{ y: number }>,
+  target: LeafTarget,
+  leaf: number,
+  pageWidth: number,
+  height: number,
+) {
+  const gap = Math.max(92, leaf * 0.92);
+  let y = target.y;
+  for (const spot of placed) {
+    if (Math.abs(spot.y - y) < gap) y = spot.y + gap;
+  }
+  if (y > height - 16) return null;
+  const stem = pointAtY(points, y);
+  const length = Math.min(140, Math.max(72, leaf * target.scale));
+  const width = Math.min(90, Math.max(48, leaf * 0.56));
+  const half = width / 2;
+  const cx = Math.min(pageWidth - half - 14, Math.max(half + 14, stem[0]));
+  return { y: stem[1], leaf: leafParts(cx, stem[1], length, width, target.lean, false) };
+}
+
+/** Two leaves through the middle, five packed at the footer so one lower screen is lusher. */
 function spreadLeaves(points: Point[], obstacles: Obstacle[], leaf: number, pageWidth: number, height: number) {
   const first = points[0];
   const last = points[points.length - 1];
   if (!first || !last) return [] as Array<{ y: number; leaf: PlantLeaf }>;
   const span = Math.max(1, last[1] - first[1]);
-  const pitch = Math.min(span * 0.06, Math.max(leaf * 2.05, 210));
-  const lowerEnd = first[1] + span * 0.9;
+  const pitch = Math.max(100, leaf * 1.05);
+  const lowerEnd = last[1] - leaf * 0.3;
   const targets: LeafTarget[] = [
-    { y: first[1] + span * 0.2, scale: 0.9, lean: 0.75, reach: 360 },
-    { y: first[1] + span * 0.38, scale: 1, lean: -0.8, reach: 320 },
-    { y: first[1] + span * 0.5, scale: 0.84, lean: 0.55, reach: 280 },
-    ...[3, 2, 1, 0].map((step, index) => ({
+    { y: first[1] + span * 0.3, scale: 0.92, lean: 0.75, reach: 280 },
+    { y: first[1] + span * 0.5, scale: 0.96, lean: -0.7, reach: 240 },
+    ...[4, 3, 2, 1, 0].map((step, index) => ({
       y: lowerEnd - pitch * step,
-      scale: 0.86 + (index % 3) * 0.06,
-      lean: index % 2 === 0 ? 0.7 : -0.62,
-      reach: 160,
+      scale: 0.9 + (index % 3) * 0.04,
+      lean: index % 2 === 0 ? 0.72 : -0.6,
+      reach: 140,
     })),
   ];
   const placed: Array<{ y: number; leaf: PlantLeaf }> = [];
   const photos = obstacles.filter((obstacle) => obstacle.kind === "photo");
   for (const target of targets) {
     const spot = fitLeaf(points, obstacles, placed, target, leaf, pageWidth, height)
-      ?? fitLeaf(points, photos, placed, target, leaf, pageWidth, height);
+      ?? fitLeaf(points, photos, placed, target, leaf, pageWidth, height)
+      ?? forcedLeaf(points, placed, target, leaf, pageWidth, height);
     if (spot) placed.push(spot);
   }
   return placed;
@@ -710,7 +734,7 @@ function heroSprig(points: Point[], anchor: Box, leaf: number, pageWidth: number
   return [0.02, 0.4, 0.78].map((t, index) => {
     const y = joinY + leaf * 0.62 * t;
     const stem = pointAtY(points, y);
-    const length = Math.min(140, Math.max(72, leaf * (0.94 + index * 0.03)));
+    const length = Math.min(120, Math.max(64, leaf * (0.94 + index * 0.03)));
     const width = Math.min(96, Math.max(52, leaf * 0.62));
     const half = width / 2;
     const cx = Math.min(pageWidth - half - 16, Math.max(half + 16, stem[0]));
@@ -768,7 +792,7 @@ export function buildPlant({
   });
   const minX = stroke;
   const maxX = Math.max(minX, width - stroke);
-  const calmed = calmRoute(routed.points, width, stroke);
+  const calmed = routed.points;
   const joined = takeJoin(calmed, Math.max(240, leaf * 1.8));
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
   const spine = curve(joined.rest);

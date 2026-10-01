@@ -101,6 +101,8 @@
   --page-stem-footer: 34rem;
   /* Share of the stem dash still hidden at scroll 0, so the first screen shows the start. */
   --stem-shown-start: 0.7;
+  /* Share of the short join still hidden at scroll 0. The long stem starts hidden. */
+  --plant-join-hidden: 0.74;
   /* On-screen stroke. The plant viewBox is 1 CSS pixel per user unit. */
   --line-stroke-stem: 15px;
   --line-stroke-vein: 5.5px;

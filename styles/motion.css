@@ -294,15 +294,13 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
 
 /* Plant dashes are pathLength units, so 1 is the whole stroke and 0 is the finished mark.
    No non-scaling stroke: the viewBox matches CSS pixels, and the token is the on-screen width.
-   The join draws with the butterfly. Hero leaves are already a plant on the first screen.
-   Later leaves finish outline, then midrib, before the next leaf starts. */
-html.motion-ready .plant-wing,
-html.motion-ready .plant-join {
+   Scroll, not a load timer, lengthens the stem and attaches each leaf. */
+html.motion-ready .plant-wing {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
 
-html.motion-ready .plant-wings.is-drawn :is(.plant-wing, .plant-join) {
+html.motion-ready .plant-wings.is-drawn .plant-wing {
   stroke-dashoffset: 0;
   transition-property: stroke-dashoffset;
   transition-duration: var(--dur-draw);
@@ -318,9 +316,18 @@ html.motion-ready .plant-wings.is-drawn :is(.plant-wing, .plant-join) {
   }
 }
 
-@keyframes plant-stem-grow {
+@keyframes plant-join-scroll {
   from {
-    stroke-dashoffset: var(--stem-shown-start);
+    stroke-dashoffset: var(--plant-join-hidden);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes plant-stem-scroll {
+  from {
+    stroke-dashoffset: 1;
   }
   to {
     stroke-dashoffset: 0;
@@ -329,56 +336,69 @@ html.motion-ready .plant-wings.is-drawn :is(.plant-wing, .plant-join) {
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
-    html.motion-ready .plant-stem {
+    html.motion-ready .plant-join {
       stroke-dasharray: 1;
-      animation-name: plant-stem-grow;
+      stroke-dashoffset: var(--plant-join-hidden);
+      animation-name: plant-join-scroll;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
-      animation-timeline: scroll(root block);
-      animation-range: 0% 94%;
+      animation-timeline: scroll(root);
+      animation-range: 0% 8%;
     }
 
-    html.motion-ready .plant-leaf-group:not(.plant-leaf-home) :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
+    html.motion-ready .plant-stem {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation-name: plant-stem-scroll;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 8% 100%;
+    }
+
+    html.motion-ready .plant-leaf-group :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
       stroke-dasharray: 1;
       stroke-dashoffset: 1;
       animation-name: plant-stroke-draw;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
-      animation-timeline: scroll(root block);
+      animation-timeline: scroll(root);
     }
 
-    html.motion-ready .plant-leaf-home :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
-      animation: none;
-      stroke-dasharray: none;
-      stroke-dashoffset: 0;
-    }
-
-    /* Later leaves start only after the first screen. Each one finishes before the next. */
-    html.motion-ready .plant-leaf-0 .plant-leaf-outline { animation-range: 12% 18%; }
-    html.motion-ready .plant-leaf-0 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 18% 21%; }
-
-    /* Middle: two leaves, each finished before the next begins. */
-    html.motion-ready .plant-leaf-1 .plant-leaf-outline { animation-range: 26% 32%; }
-    html.motion-ready .plant-leaf-1 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 32% 35%; }
-    html.motion-ready .plant-leaf-2 .plant-leaf-outline { animation-range: 38% 44%; }
-    html.motion-ready .plant-leaf-2 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 44% 47%; }
-
-    /* Lower: four leaves, packed so the page reads fuller toward the footer. */
-    html.motion-ready .plant-leaf-3 .plant-leaf-outline { animation-range: 52% 57%; }
-    html.motion-ready .plant-leaf-3 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 57% 60%; }
-    html.motion-ready .plant-leaf-4 .plant-leaf-outline { animation-range: 62% 67%; }
-    html.motion-ready .plant-leaf-4 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 67% 70%; }
-    html.motion-ready .plant-leaf-5 .plant-leaf-outline { animation-range: 72% 77%; }
-    html.motion-ready .plant-leaf-5 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 77% 80%; }
-    html.motion-ready .plant-leaf-6 .plant-leaf-outline { animation-range: 82% 87%; }
-    html.motion-ready .plant-leaf-6 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 87% 91%; }
+    /* Nothing but the short join is inked at scroll 0. Each leaf finishes before the next starts. */
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-outline { animation-range: 4% 9%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 9% 11%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-outline { animation-range: 11% 16%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 16% 19%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-outline { animation-range: 21% 26%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 26% 29%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(4 of .plant-leaf-group) .plant-leaf-outline { animation-range: 31% 36%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(4 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 36% 39%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(5 of .plant-leaf-group) .plant-leaf-outline { animation-range: 41% 46%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(5 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 46% 49%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(6 of .plant-leaf-group) .plant-leaf-outline { animation-range: 51% 56%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(6 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 56% 59%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(7 of .plant-leaf-group) .plant-leaf-outline { animation-range: 61% 66%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(7 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 66% 69%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(8 of .plant-leaf-group) .plant-leaf-outline { animation-range: 71% 76%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(8 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 76% 79%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(9 of .plant-leaf-group) .plant-leaf-outline { animation-range: 81% 86%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(9 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 86% 89%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(10 of .plant-leaf-group) .plant-leaf-outline { animation-range: 90% 94%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(10 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 94% 97%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(11 of .plant-leaf-group) .plant-leaf-outline { animation-range: 90% 94%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(11 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 94% 97%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(12 of .plant-leaf-group) .plant-leaf-outline { animation-range: 90% 94%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(12 of .plant-leaf-group) :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 94% 97%; }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .plant-wing,
+  .plant-join,
   .plant-spine,
   .plant-stem,
   .plant-leaf-outline,

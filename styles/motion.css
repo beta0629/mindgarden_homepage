@@ -138,6 +138,8 @@ html.motion-ready .plant-anchor,
   stroke-width: var(--line-stroke-wing);
 }
 
+.plant-join,
+.plant-stem,
 .plant-spine,
 .plant-leaf-outline {
   stroke-width: var(--line-stroke-stem);
@@ -264,7 +266,9 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   html.motion-ready .line-draw-grow path,
   html.motion-ready .line-draw-leaf path,
   .plant-wing,
+  .plant-join,
   .plant-spine,
+  .plant-stem,
   .plant-leaf-outline,
   .plant-leaf-midrib,
   .plant-leaf-vein {
@@ -277,31 +281,26 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
 
 /* Plant dashes are pathLength units, so 1 is the whole stroke and 0 is the finished mark.
    No non-scaling stroke: the viewBox matches CSS pixels, and the token is the on-screen width.
-   One spine runs from the butterfly to the footer and grows with the document scroll. */
+   The join draws with the butterfly. Each later stroke starts only after the previous dashoffset reaches 0.
+   Leaf 0 window 0–24%: stem 0–9.6%, outline 9.6–16.8%, veins 16.8–24%.
+   Leaf 1 window 24–54%: stem 24–36%, outline 36–45%, veins 45–54%.
+   Leaf 2 window 54–90%: stem 54–68.4%, outline 68.4–79.2%, veins 79.2–90%.
+   The closing stem segment runs 90–100% into the footer.
+   Within veins, the midrib finishes before each side vein, one stroke at a time. */
 html.motion-ready .plant-wing,
-html.motion-ready .plant-spine,
-html.motion-ready .plant-leaf path {
+html.motion-ready .plant-join {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
 
-html.motion-ready .plant-wings.is-drawn .plant-wing {
+html.motion-ready .plant-wings.is-drawn :is(.plant-wing, .plant-join) {
   stroke-dashoffset: 0;
   transition-property: stroke-dashoffset;
   transition-duration: var(--dur-draw);
   transition-timing-function: var(--ease-draw);
 }
 
-@keyframes plant-stem-grow {
-  from {
-    stroke-dashoffset: var(--stem-shown-start);
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes plant-leaf-grow {
+@keyframes plant-stroke-draw {
   from {
     stroke-dashoffset: 1;
   }
@@ -312,38 +311,41 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
-    html.motion-ready .plant-spine {
-      animation-name: plant-stem-grow;
+    html.motion-ready :is(.plant-stem, .plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation-name: plant-stroke-draw;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root block);
     }
 
-    html.motion-ready .plant-leaf path {
-      animation-name: plant-leaf-grow;
-      animation-duration: auto;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: scroll(root block);
-    }
+    html.motion-ready .plant-stem-0 { animation-range: 0% 9.6%; }
+    html.motion-ready .plant-leaf-0 .plant-leaf-outline { animation-range: 9.6% 16.8%; }
+    html.motion-ready .plant-leaf-0 .plant-leaf-midrib { animation-range: 16.8% 19.2%; }
+    html.motion-ready .plant-leaf-0 .plant-leaf-vein-0 { animation-range: 19.2% 20.4%; }
+    html.motion-ready .plant-leaf-0 .plant-leaf-vein-1 { animation-range: 20.4% 21.6%; }
+    html.motion-ready .plant-leaf-0 .plant-leaf-vein-2 { animation-range: 21.6% 22.8%; }
+    html.motion-ready .plant-leaf-0 .plant-leaf-vein-3 { animation-range: 22.8% 24%; }
 
-    html.motion-ready .plant-leaf-0 path {
-      animation-range: 2% 12%;
-    }
+    html.motion-ready .plant-stem-1 { animation-range: 24% 36%; }
+    html.motion-ready .plant-leaf-1 .plant-leaf-outline { animation-range: 36% 45%; }
+    html.motion-ready .plant-leaf-1 .plant-leaf-midrib { animation-range: 45% 48%; }
+    html.motion-ready .plant-leaf-1 .plant-leaf-vein-0 { animation-range: 48% 49.5%; }
+    html.motion-ready .plant-leaf-1 .plant-leaf-vein-1 { animation-range: 49.5% 51%; }
+    html.motion-ready .plant-leaf-1 .plant-leaf-vein-2 { animation-range: 51% 52.5%; }
+    html.motion-ready .plant-leaf-1 .plant-leaf-vein-3 { animation-range: 52.5% 54%; }
 
-    html.motion-ready .plant-leaf-1 path {
-      animation-range: 16% 28%;
-    }
+    html.motion-ready .plant-stem-2 { animation-range: 54% 68.4%; }
+    html.motion-ready .plant-leaf-2 .plant-leaf-outline { animation-range: 68.4% 79.2%; }
+    html.motion-ready .plant-leaf-2 .plant-leaf-midrib { animation-range: 79.2% 82.8%; }
+    html.motion-ready .plant-leaf-2 .plant-leaf-vein-0 { animation-range: 82.8% 84.6%; }
+    html.motion-ready .plant-leaf-2 .plant-leaf-vein-1 { animation-range: 84.6% 86.4%; }
+    html.motion-ready .plant-leaf-2 .plant-leaf-vein-2 { animation-range: 86.4% 88.2%; }
+    html.motion-ready .plant-leaf-2 .plant-leaf-vein-3 { animation-range: 88.2% 90%; }
 
-    html.motion-ready .plant-leaf-2 path {
-      animation-range: 42% 56%;
-    }
-
-    html.motion-ready .plant-leaf-early path {
-      animation: none;
-      stroke-dashoffset: 0;
-    }
+    html.motion-ready .plant-stem-3 { animation-range: 90% 100%; }
   }
 }
 

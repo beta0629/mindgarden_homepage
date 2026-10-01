@@ -71,9 +71,8 @@
 
 .plant-anchor {
   display: block;
-  width: var(--line-join);
-  height: var(--line-anchor-h);
-  margin-bottom: var(--space-10);
+  position: relative;
+  z-index: 2;
 }
 
 .scroll-stem-host {
@@ -98,11 +97,6 @@ html {
 footer :is(a, p, li, span, img) {
   position: relative;
   z-index: 2;
-}
-
-html.motion-ready .plant-anchor,
-.scroll-stem-host.is-planted .plant-anchor {
-  visibility: hidden;
 }
 
 .scroll-stem {
@@ -154,6 +148,11 @@ html.motion-ready .plant-anchor,
   stroke-width: var(--line-stroke-wing);
 }
 
+.wrap-line {
+  stroke-width: var(--line-stroke-wrap);
+  opacity: var(--line-opacity);
+}
+
 .plant-join,
 .plant-stem,
 .plant-spine,
@@ -174,6 +173,14 @@ html.motion-ready .line-draw path {
   --draw-scale: calc(100cqw / var(--vb-w) * 1px);
   stroke-dasharray: var(--draw-scale);
   stroke-dashoffset: var(--draw-scale);
+}
+
+/* The hero butterfly is a finished thin drawing. The wrapping line is the scroll stroke. */
+html.motion-ready .line-art-butterfly path {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  animation: none;
+  transition: none;
 }
 
 /* A stretched stem is much taller than its viewBox. Width-based dashes
@@ -295,79 +302,40 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   }
 }
 
-/* Plant dashes are pathLength units, so 1 is the whole stroke and 0 is the finished mark.
-   No non-scaling stroke: the viewBox matches CSS pixels, and the token is the on-screen width.
-   Scroll, not a load timer, lengthens the stem and attaches each leaf. */
-html.motion-ready .plant-wing {
+/* One line. pathLength is 1, so a dash of 1 is the whole continuation.
+   At scroll 0 only the short opening stroke is painted. Scroll reveals the wrap.
+   The viewBox matches CSS pixels, so the stroke token is the on-screen width. */
+@keyframes wrap-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+html.motion-ready .wrap-line-rest {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
 
-html.motion-ready .plant-wings.is-drawn .plant-wing {
-  stroke-dashoffset: 0;
-  transition-property: stroke-dashoffset;
-  transition-duration: var(--dur-draw);
-  transition-timing-function: var(--ease-draw);
-}
-
-@keyframes plant-stroke-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes plant-stem-scroll {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
-    /* Opening stroke stays put. The wrap is hidden until the page moves. */
-    html.motion-ready .plant-join {
-      stroke-dasharray: none;
-      stroke-dashoffset: 0;
-    }
-
-    html.motion-ready .plant-stem {
-      stroke-dasharray: 1;
-      stroke-dashoffset: 1;
-      animation-name: plant-stem-scroll;
-      animation-duration: auto;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: scroll(root);
-      animation-range: 0% 36%;
-    }
-
-    html.motion-ready .plant-leaf-group :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
-      stroke-dasharray: 1;
-      stroke-dashoffset: 1;
-      animation-name: plant-stroke-draw;
+    html.motion-ready .wrap-line-rest {
+      animation-name: wrap-draw;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
     }
-
-    /* Three leaves, far apart, after the opening stroke. */
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-outline { animation-range: 8% 13%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 12% 16%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-outline { animation-range: 17% 22%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 21% 25%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-outline { animation-range: 27% 32%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 31% 35%; }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html.motion-ready .wrap-line,
+  html.motion-ready .wrap-line-rest,
+  .wrap-line,
+  .wrap-line-rest,
   .plant-wing,
   .plant-join,
   .plant-spine,

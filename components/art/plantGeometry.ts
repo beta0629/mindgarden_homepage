@@ -1,25 +1,14 @@
 export type Box = { x: number; y: number; w: number; h: number };
 
-export type Obstacle = Box & { kind: "photo" | "block" | "frame" };
-
-export type Frame = Box & { approach: number };
-
-export type PlantLeaf = {
-  outline: string;
-  midrib: string;
-  veins: string[];
-  home: boolean;
-};
+export type Obstacle = Box & { kind: "photo" | "block" };
 
 export type PlantGeometry = {
   viewBox: string;
-  wings: string[];
   join: string;
-  segments: string[];
-  leaves: PlantLeaf[];
+  rest: string;
 };
 
-type Point = [number, number];
+type Point = { x: number; y: number };
 
 function round(n: number) {
   return Math.round(n * 10) / 10;
@@ -38,302 +27,285 @@ function bottomOf(box: Box) {
   return box.y + box.h;
 }
 
-function push(pts: Point[], x: number, y: number) {
-  const prev = pts[pts.length - 1];
-  if (!prev) {
-    pts.push([x, y]);
-    return;
-  }
-  const dx = x - prev[0];
-  const dy = y - prev[1];
-  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
-  if (Math.abs(dx) > 0.5 && Math.abs(dy) > 0.5) pts.push([x, prev[1]]);
-  const mid = pts[pts.length - 1];
-  if (!mid || Math.abs(mid[0] - x) > 0.5 || Math.abs(mid[1] - y) > 0.5) pts.push([x, y]);
+function gapOf(a: Point, b: Point) {
+  return Math.hypot(b.x - a.x, b.y - a.y);
 }
 
-/** Quarter-circle corners on an orthogonal polyline. */
-function roundedPolyline(pts: Point[], radius: number) {
-  const first = pts[0];
-  if (!first || pts.length < 2) return "";
-  let d = `M${round(first[0])} ${round(first[1])}`;
-  if (pts.length === 2) {
-    const last = pts[1] ?? first;
-    return `${d}L${round(last[0])} ${round(last[1])}`;
+function fmt(point: Point) {
+  return `${round(point.x)} ${round(point.y)}`;
+}
+
+function absorb(host: Box, box: Box) {
+  const x = Math.min(host.x, box.x);
+  const y = Math.min(host.y, box.y);
+  const right = Math.max(rightOf(host), rightOf(box));
+  const bottom = Math.max(bottomOf(host), bottomOf(box));
+  host.x = x;
+  host.y = y;
+  host.w = right - x;
+  host.h = bottom - y;
+}
+
+function overlapsX(a: Box, b: Box, ratio: number) {
+  const overlap = Math.min(rightOf(a), rightOf(b)) - Math.max(a.x, b.x);
+  if (overlap <= 0) return false;
+  return overlap / Math.min(a.w, b.w) >= ratio;
+}
+
+function nearY(a: Box, b: Box, gap: number) {
+  const space = Math.max(0, Math.max(a.y - bottomOf(b), b.y - bottomOf(a)));
+  return space <= gap;
+}
+
+function clusterBoxes(boxes: Box[], gap: number) {
+  const items = boxes.map((box) => ({ ...box }));
+  const used = items.map(() => false);
+  const groups: Box[] = [];
+  for (let i = 0; i < items.length; i += 1) {
+    if (used[i]) continue;
+    const host = { ...items[i] };
+    used[i] = true;
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (let j = 0; j < items.length; j += 1) {
+        if (used[j]) continue;
+        if (!nearY(host, items[j], gap) || !overlapsX(host, items[j], 0.3)) continue;
+        absorb(host, items[j]);
+        used[j] = true;
+        grew = true;
+      }
+    }
+    groups.push(host);
   }
-  for (let i = 1; i < pts.length - 1; i += 1) {
-    const prev = pts[i - 1] ?? first;
-    const cur = pts[i] ?? prev;
-    const next = pts[i + 1] ?? cur;
-    const inLen = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
-    const outLen = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
+  return groups;
+}
+
+function mergeBands(boxes: Box[], xGap: number) {
+  const sorted = boxes.map((box) => ({ ...box })).sort((a, b) => a.y - b.y || a.x - b.x);
+  const bands: Box[] = [];
+  for (const box of sorted) {
+    const band = bands.find((host) => {
+      const overlap = Math.min(bottomOf(host), bottomOf(box)) - Math.max(host.y, box.y);
+      const space = Math.max(0, Math.max(box.x - rightOf(host), host.x - rightOf(box)));
+      return overlap >= Math.min(host.h, box.h) * 0.45 && space <= xGap;
+    });
+    if (band) absorb(band, box);
+    else bands.push(box);
+  }
+  return bands;
+}
+
+function contained(inner: Box, outer: Box) {
+  return inner.x >= outer.x - 6 && inner.y >= outer.y - 6 && rightOf(inner) <= rightOf(outer) + 6 && bottomOf(inner) <= bottomOf(outer) + 6;
+}
+
+function padBox(box: Box, pad: number, width: number, height: number): Box | null {
+  const x = clamp(box.x - pad, 10, width - 48);
+  const y = Math.max(0, box.y - pad);
+  const right = clamp(rightOf(box) + pad, x + 36, width - 10);
+  const bottom = clamp(bottomOf(box) + pad, y + 36, height - 12);
+  if (right - x < 36 || bottom - y < 36) return null;
+  return { x, y, w: right - x, h: bottom - y };
+}
+
+/** Quarter-circle corners. A turn around a block is a curve, not a miter. */
+function roundedPolyline(points: Point[], radius: number) {
+  const first = points[0];
+  if (!first) return "";
+  if (points.length < 2) return `M${fmt(first)}`;
+  let d = `M${fmt(first)}`;
+  if (points.length === 2) return `${d}L${fmt(points[1] ?? first)}`;
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const prev = points[i - 1] ?? first;
+    const cur = points[i] ?? prev;
+    const next = points[i + 1] ?? cur;
+    const inLen = gapOf(prev, cur);
+    const outLen = gapOf(cur, next);
     const use = Math.min(radius, inLen / 2.05, outLen / 2.05);
-    if (inLen < 1 || use < 1.5) {
-      d += `L${round(cur[0])} ${round(cur[1])}`;
+    if (inLen < 1 || outLen < 1 || use < 1.5) {
+      d += `L${fmt(cur)}`;
       continue;
     }
-    const ux = (cur[0] - prev[0]) / inLen;
-    const uy = (cur[1] - prev[1]) / inLen;
-    const vx = (next[0] - cur[0]) / outLen;
-    const vy = (next[1] - cur[1]) / outLen;
-    const ax = cur[0] - ux * use;
-    const ay = cur[1] - uy * use;
-    const bx = cur[0] + vx * use;
-    const by = cur[1] + vy * use;
+    const ux = (cur.x - prev.x) / inLen;
+    const uy = (cur.y - prev.y) / inLen;
+    const vx = (next.x - cur.x) / outLen;
+    const vy = (next.y - cur.y) / outLen;
+    const ax = cur.x - ux * use;
+    const ay = cur.y - uy * use;
+    const bx = cur.x + vx * use;
+    const by = cur.y + vy * use;
     const k = use * 0.551915;
     d += `L${round(ax)} ${round(ay)}C${round(ax + ux * k)} ${round(ay + uy * k)} ${round(bx - vx * k)} ${round(by - vy * k)} ${round(bx)} ${round(by)}`;
   }
-  const last = pts[pts.length - 1] ?? first;
-  d += `L${round(last[0])} ${round(last[1])}`;
-  return d;
+  const last = points[points.length - 1] ?? first;
+  return `${d}L${fmt(last)}`;
 }
 
-function arcTable(points: Point[]) {
-  const cum = [0];
-  for (let i = 1; i < points.length; i += 1) {
-    const prev = points[i - 1] ?? points[0] ?? [0, 0];
-    const cur = points[i] ?? prev;
-    cum.push((cum[i - 1] ?? 0) + Math.hypot(cur[0] - prev[0], cur[1] - prev[1]));
-  }
-  return cum;
-}
-
-function pointAtArc(points: Point[], cum: number[], dist: number): Point {
-  const first = points[0] ?? [0, 0];
-  if (points.length < 2) return first;
-  const total = cum[cum.length - 1] ?? 0;
-  const target = Math.max(0, Math.min(total, dist));
-  for (let i = 1; i < points.length; i += 1) {
-    const end = cum[i] ?? 0;
-    if (end + 0.01 < target) continue;
-    const start = cum[i - 1] ?? 0;
-    const prev = points[i - 1] ?? first;
-    const cur = points[i] ?? prev;
-    const span = end - start;
-    const t = span <= 0 ? 0 : (target - start) / span;
-    return [prev[0] + (cur[0] - prev[0]) * t, prev[1] + (cur[1] - prev[1]) * t];
-  }
-  return points[points.length - 1] ?? first;
-}
-
-function tangentAt(points: Point[], cum: number[], dist: number): Point {
-  const total = cum[cum.length - 1] ?? 0;
-  const ahead = pointAtArc(points, cum, Math.min(total, dist + 12));
-  const behind = pointAtArc(points, cum, Math.max(0, dist - 12));
-  const dx = ahead[0] - behind[0];
-  const dy = ahead[1] - behind[1];
-  const len = Math.hypot(dx, dy) || 1;
-  return [dx / len, dy / len];
-}
-
-function leafOutline(cx: number, baseY: number, length: number, width: number, lean: number) {
-  const tipX = cx + width * 0.18 * lean;
-  const tipY = baseY - length;
-  const hw = width / 2;
-  return [
-    `M${round(cx)} ${round(baseY)}`,
-    `C${round(cx + hw * 0.35)} ${round(baseY - length * 0.08)} ${round(cx + hw * 0.95)} ${round(baseY - length * 0.34)} ${round(cx + hw * 0.62)} ${round(baseY - length * 0.62)}`,
-    `C${round(cx + hw * 0.28)} ${round(baseY - length * 0.86)} ${round(tipX + width * 0.04)} ${round(tipY + length * 0.12)} ${round(tipX)} ${round(tipY)}`,
-    `C${round(tipX - width * 0.06)} ${round(tipY + length * 0.14)} ${round(cx - hw * 0.42)} ${round(baseY - length * 0.8)} ${round(cx - hw * 0.7)} ${round(baseY - length * 0.46)}`,
-    `C${round(cx - hw * 0.9)} ${round(baseY - length * 0.22)} ${round(cx - hw * 0.2)} ${round(baseY - length * 0.05)} ${round(cx)} ${round(baseY)}`,
-  ].join("");
-}
-
-function leafParts(cx: number, baseY: number, length: number, width: number, lean: number): PlantLeaf {
-  const tipX = cx + width * 0.18 * lean;
-  const tipY = baseY - length;
-  const midrib = `M${round(cx)} ${round(baseY)}C${round(cx + width * 0.08 * lean)} ${round(baseY - length * 0.4)} ${round(cx + width * 0.12 * lean)} ${round(baseY - length * 0.72)} ${round(tipX)} ${round(tipY)}`;
-  return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins: [], home: false };
-}
-
-function includePoint(bounds: { minX: number; minY: number; maxX: number; maxY: number }, x: number, y: number) {
-  bounds.minX = Math.min(bounds.minX, x);
-  bounds.minY = Math.min(bounds.minY, y);
-  bounds.maxX = Math.max(bounds.maxX, x);
-  bounds.maxY = Math.max(bounds.maxY, y);
-}
-
-function pathBounds(d: string): Box | null {
-  const tokens = d.match(/[a-zA-Z]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) ?? [];
-  const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
-  let i = 0;
-  let cx = 0;
-  let cy = 0;
-  let cmd = "";
-  const num = () => Number(tokens[i++]);
-  while (i < tokens.length) {
-    if (/[a-zA-Z]/.test(tokens[i] ?? "")) cmd = tokens[i++] ?? cmd;
-    const kind = cmd.toLowerCase();
-    if (kind === "m" || kind === "l") {
-      cx = num();
-      cy = num();
-      includePoint(bounds, cx, cy);
-    } else if (kind === "c") {
-      const x1 = num();
-      const y1 = num();
-      const x2 = num();
-      const y2 = num();
-      const x = num();
-      const y = num();
-      for (let step = 1; step <= 8; step += 1) {
-        const t = step / 8;
-        const u = 1 - t;
-        includePoint(
-          bounds,
-          u * u * u * cx + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x,
-          u * u * u * cy + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y,
-        );
+function simplify(points: Point[]) {
+  const out: Point[] = [];
+  for (const point of points) {
+    const prev = out[out.length - 1];
+    if (prev && gapOf(prev, point) < 4) continue;
+    const prev2 = out[out.length - 2];
+    if (prev && prev2) {
+      const dx1 = prev.x - prev2.x;
+      const dy1 = prev.y - prev2.y;
+      const dx2 = point.x - prev.x;
+      const dy2 = point.y - prev.y;
+      const reverse = dx1 * dx2 + dy1 * dy2 < 0 && Math.min(Math.hypot(dx1, dy1), Math.hypot(dx2, dy2)) < 16;
+      if (reverse) {
+        out.pop();
+        const kept = out[out.length - 1];
+        if (kept && gapOf(kept, point) < 4) continue;
       }
-      cx = x;
-      cy = y;
-    } else {
-      break;
     }
+    out.push(point);
   }
-  if (!Number.isFinite(bounds.minX)) return null;
-  return { x: bounds.minX, y: bounds.minY, w: bounds.maxX - bounds.minX, h: bounds.maxY - bounds.minY };
-}
-
-function boxGap(a: Box, b: Box) {
-  const dx = Math.max(a.x - rightOf(b), b.x - rightOf(a));
-  const dy = Math.max(a.y - bottomOf(b), b.y - bottomOf(a));
-  if (dx < 0 && dy < 0) return 0;
-  return Math.hypot(Math.max(0, dx), Math.max(0, dy));
-}
-
-function outerEdge(frame: Box, width: number, gap: number) {
-  const side: "left" | "right" = frame.x + frame.w / 2 < width * 0.48 ? "left" : "right";
-  let outer = side === "right" ? rightOf(frame) + gap : frame.x - gap;
-  outer = clamp(outer, 8, width - 8);
-  if (side === "right" && outer < rightOf(frame) - 1) outer = clamp(rightOf(frame) - 1, 8, width - 8);
-  if (side === "left" && outer > frame.x + 1) outer = clamp(frame.x + 1, 8, width - 8);
-  return { side, outer };
+  return out;
 }
 
 /**
- * One open line. A short horizontal stroke sits above the hero.
- * The rest turns a rounded corner around each marked block and continues
- * into the following section, switching sides instead of staying in one margin.
+ * Edges of one block, always including a turn. Side-by-side blocks stop on the shared
+ * gutter so the stroke does not run to the bottom and trace back up the same edge.
  */
-function buildPoints({
-  width,
-  height,
-  anchor,
-  frames,
-  gap,
-  hook,
-}: {
-  width: number;
-  height: number;
-  anchor: Box;
-  frames: Frame[];
-  gap: number;
-  hook: number;
-}) {
-  const y = anchor.y + anchor.h * 0.55;
-  const x0 = clamp(anchor.x, 8, width - 64);
-  const x1 = clamp(anchor.x + Math.max(64, anchor.w), x0 + 64, width * 0.42);
-  const pts: Point[] = [[x0, y], [x1, y]];
-  let cursor: Point = [x1, y];
-
-  frames.forEach((frame, index) => {
-    if (bottomOf(frame) < cursor[1] + 24) return;
-    const { side, outer } = outerEdge(frame, width, gap);
-    const top = frame.y - gap;
-    const bot = Math.min(height - 24, bottomOf(frame) + gap);
-    if (bot <= top + 16) return;
-
-    if (index === 0 && cursor[1] < frame.y - gap) {
-      push(pts, outer, cursor[1]);
-      cursor = [outer, cursor[1]];
-    } else if (Math.abs(cursor[0] - outer) > 10) {
-      const yCross = clamp(frame.approach, cursor[1] + 8, Math.max(cursor[1] + 8, top - 4));
-      push(pts, cursor[0], yCross);
-      push(pts, outer, yCross);
-      cursor = [outer, yCross];
+function wrapBlock(box: Box, from: Point, toward: Point): Point[] {
+  const tl = { x: box.x, y: box.y };
+  const tr = { x: rightOf(box), y: box.y };
+  const br = { x: rightOf(box), y: bottomOf(box) };
+  const bl = { x: box.x, y: bottomOf(box) };
+  const fromLeft = from.x <= box.x + box.w * 0.5;
+  const nextRight = toward.x >= box.x + box.w * 0.45;
+  const beside = toward.y > box.y + 28 && toward.y < bottomOf(box) - 28;
+  if (from.x < box.x - 8 && from.y > box.y + 16 && from.y < bottomOf(box) - 16) {
+    const door = { x: box.x, y: clamp(from.y, box.y + 28, bottomOf(box) - 28) };
+    return [door, tl, tr, br, bl];
+  }
+  if (from.x > rightOf(box) + 8 && from.y > box.y + 16 && from.y < bottomOf(box) - 16) {
+    const door = { x: rightOf(box), y: clamp(from.y, box.y + 28, bottomOf(box) - 28) };
+    return [door, tr, tl, bl, br];
+  }
+  const onTop = from.y <= box.y + 28 && from.x >= box.x - 12 && from.x <= rightOf(box) + 12;
+  if (onTop) {
+    const start = { x: clamp(from.x, box.x, rightOf(box)), y: box.y };
+    if (beside && nextRight) {
+      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
+      return [start, tr, { x: tr.x, y }];
     }
-
-    if (cursor[1] < top) {
-      push(pts, outer, top);
-      cursor = [outer, top];
+    if (beside && !nextRight) {
+      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
+      return [start, tl, { x: tl.x, y }];
     }
-    push(pts, outer, bot);
-    const reach = Math.min(hook, Math.max(36, frame.w * 0.18));
-    const hooked = clamp(side === "right" ? outer - reach : outer + reach, 8, width - 8);
-    push(pts, hooked, bot);
-    const backY = Math.min(height - 12, bot + Math.max(28, hook * 0.45));
-    push(pts, hooked, backY);
-    push(pts, outer, backY);
-    cursor = [outer, backY];
-  });
-
-  push(pts, cursor[0], Math.min(height - 8, cursor[1] + Math.max(180, hook * 3)));
-  return pts;
+    if (nextRight) return [start, tr, br];
+    return [start, tl, bl];
+  }
+  if (from.y <= box.y + 28) {
+    if (beside && fromLeft && nextRight) {
+      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
+      return [tl, tr, { x: tr.x, y }];
+    }
+    if (beside && !fromLeft && !nextRight) {
+      const y = clamp(toward.y, box.y + 48, bottomOf(box) - 28);
+      return [tr, tl, { x: tl.x, y }];
+    }
+    if (fromLeft && nextRight) return [tl, tr, br];
+    if (!fromLeft && !nextRight) return [tr, tl, bl];
+    if (fromLeft) return [tl, tr, br, bl];
+    return [tr, tl, bl, br];
+  }
+  if (from.x <= box.x + 16) return nextRight ? [tl, tr, br] : [tl, tr, br, bl];
+  if (from.x >= rightOf(box) - 16) return nextRight ? [tr, br, bl] : [tr, tl, bl];
+  if (fromLeft) return [tl, tr, br];
+  return [tr, tl, bl];
 }
 
-function placeLeaves(points: Point[], leaf: number, leafGap: number, frames: Frame[], anchor: Box) {
-  const stem = points.slice(1);
-  const cum = arcTable(stem);
-  const total = cum[cum.length - 1] ?? 0;
-  if (total < 80 || leaf < 8) return [] as PlantLeaf[];
-  const length = Math.max(30, leaf * 0.92);
-  const width = Math.max(18, leaf * 0.5);
-  const heroFloor = anchor.y + anchor.h + leaf * 2.2;
-  const placed: Array<{ box: Box; leaf: PlantLeaf }> = [];
-  const targets = [0.26, 0.52, 0.78];
-  for (const fraction of targets) {
-    let found: { box: Box; leaf: PlantLeaf } | null = null;
-    for (let dist = total * fraction; dist < Math.min(total - 8, total * fraction + leaf * 6); dist += 28) {
-      const stemPoint = pointAtArc(stem, cum, dist);
-      if (stemPoint[1] < heroFloor) continue;
-      const tangent = tangentAt(stem, cum, dist);
-      const lean = tangent[1] >= 0 ? (tangent[0] > 0 ? -1 : 1) : 1;
-      const cx = stemPoint[0] + lean * Math.max(6, width * 0.08);
-      const parts = leafParts(cx, stemPoint[1], length, width, lean);
-      const box = pathBounds(parts.outline);
-      if (!box || box.y < 0) continue;
-      if (frames.some((frame) => boxGap(box, frame) < 8)) continue;
-      if (placed.some((spot) => boxGap(box, spot.box) < leafGap)) continue;
-      found = { box, leaf: parts };
-      break;
-    }
-    if (found) placed.push(found);
+function route(from: Point, to: Point): Point[] {
+  if (gapOf(from, to) < 2) return [];
+  if (Math.abs(from.x - to.x) < 2 || Math.abs(from.y - to.y) < 2) return [to];
+  if (Math.abs(to.x - from.x) >= Math.abs(to.y - from.y)) return [{ x: to.x, y: from.y }, to];
+  return [{ x: from.x, y: to.y }, to];
+}
+
+function targetsFrom(photos: Box[], blocks: Box[], clusterGap: number, width: number, height: number, pad: number) {
+  const captions = new Set<Box>();
+  const grownPhotos = photos.map((photo) => ({ ...photo }));
+  for (const block of blocks) {
+    const photo = grownPhotos.find((item) => block.y >= bottomOf(item) - 8 && block.y - bottomOf(item) < 36 && overlapsX(item, block, 0.35));
+    if (!photo) continue;
+    absorb(photo, block);
+    captions.add(block);
   }
-  return placed.map((spot) => spot.leaf);
+  const text = clusterBoxes(blocks.filter((block) => !captions.has(block)), clusterGap).filter((box) => box.w >= 96 && box.h >= 36);
+  const pictures = mergeBands(grownPhotos, 96).filter((box) => box.w >= 64 && box.h >= 64);
+  const merged = [...pictures, ...text].sort((a, b) => a.y - b.y || a.x - b.x);
+  const kept: Box[] = [];
+  for (const box of merged) {
+    if (kept.some((host) => contained(box, host))) continue;
+    for (let i = kept.length - 1; i >= 0; i -= 1) {
+      if (contained(kept[i], box)) kept.splice(i, 1);
+    }
+    kept.push(box);
+  }
+  return kept
+    .map((box) => padBox(box, pad, width, height))
+    .filter((box): box is Box => box !== null)
+    .sort((a, b) => a.y - b.y || a.x - b.x);
 }
 
 export function buildPlant({
   width,
   height,
   anchor,
-  frames,
+  photos,
+  blocks,
   radius,
-  gap,
-  hook,
-  leaf,
-  leafGap,
+  pad,
+  bend,
+  start,
+  clusterGap,
 }: {
   width: number;
   height: number;
   anchor: Box;
-  frames: Frame[];
+  photos: Box[];
+  blocks: Box[];
   radius: number;
-  gap: number;
-  hook: number;
-  leaf: number;
-  leafGap: number;
+  pad: number;
+  bend: number;
+  start: number;
+  clusterGap: number;
 }): PlantGeometry {
-  const points = buildPoints({ width, height, anchor, frames, gap, hook });
-  const start = points[0] ?? [0, 0];
-  const joinEnd = points[1] ?? start;
-  const join = `M${round(start[0])} ${round(start[1])}L${round(joinEnd[0])} ${round(joinEnd[1])}`;
-  const stem = roundedPolyline(points.slice(1), Math.max(12, radius));
-  const leaves = placeLeaves(points, leaf, leafGap, frames, anchor);
+  const viewBox = `0 0 ${round(width)} ${round(height)}`;
+  const targets = targetsFrom(photos, blocks, clusterGap, width, height, pad);
+  const y = clamp(anchor.y + anchor.h + 8, 12, Math.max(12, height - 48));
+  const x0 = clamp(anchor.x + 2, 12, width - 120);
+  const x1 = clamp(x0 + Math.max(72, start), x0 + 72, Math.min(width - 24, x0 + width * 0.22));
+  const origin = { x: x0, y };
+  const stub = { x: x1, y };
+  const tail: Point[] = [stub];
+  let cursor = stub;
+
+  targets.forEach((box, index) => {
+    const next = targets[index + 1];
+    const toward = next
+      ? { x: next.x + next.w / 2, y: next.y + Math.min(next.h * 0.35, 80) }
+      : { x: box.x + box.w / 2, y: Math.min(height - 16, bottomOf(box) + 160) };
+    const wrap = wrapBlock(box, cursor, toward);
+    const first = wrap[0];
+    if (!first) return;
+    for (const point of route(cursor, first)) tail.push(point);
+    for (const point of wrap) tail.push(point);
+    cursor = wrap[wrap.length - 1] ?? cursor;
+  });
+
+  const tailEnd = Math.min(height - 10, cursor.y + Math.max(120, bend * 2));
+  if (tailEnd > cursor.y + 24) tail.push({ x: cursor.x, y: tailEnd });
+
+  const head = simplify([origin, stub]);
+  const restPoints = simplify(tail);
   return {
-    viewBox: `0 0 ${round(width)} ${round(height)}`,
-    wings: [],
-    join,
-    segments: stem ? [stem] : [],
-    leaves,
+    viewBox,
+    join: roundedPolyline(head, radius),
+    rest: roundedPolyline(restPoints, Math.max(16, radius)),
   };
 }

@@ -94,29 +94,25 @@
 
   /* sizes */
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
-  --line-butterfly: 18rem;
+  --line-butterfly: 6rem;
   --line-stem: 2.75rem;
   --line-leaf: 2.75rem;
   /* The line overlay runs the full page and continues a short way into the footer. */
   --page-stem-footer: 12rem;
-  /* Share of the stem dash still hidden at scroll 0, so the first screen shows the start. */
-  --stem-shown-start: 0.7;
-  /* The short opening stroke is fully present. The wrapping continuation starts hidden. */
-  --plant-join-hidden: 0;
-  /* On-screen stroke. The line viewBox is 1 CSS pixel per user unit. */
-  --line-stroke-stem: 2.5px;
-  --line-stroke-vein: 1.5px;
-  --line-stroke-wing: 2.5px;
-  /* Faint line beside text and photos. */
-  --line-opacity: 0.47;
-  /* Clear space between the few leaves on the line. */
+  /* On-screen stroke of the wrapping line. The viewBox is 1 CSS pixel per user unit. */
+  --line-stroke-wrap: 2px;
+  --line-stroke-stem: 2px;
+  --line-stroke-vein: 1.25px;
+  --line-stroke-wing: 1.35px;
+  /* Faint accent line behind text and photos. */
+  --line-opacity: 0.45;
   --line-leaf-gap: 7rem;
   --line-butterfly-gap: 16px;
-  /* Opening stroke, and the gap/hook where the line turns around a block. */
-  --line-join: 8.5rem;
-  --line-anchor-h: 1.75rem;
-  --line-wrap-gap: 1.25rem;
-  --line-hook: 4.5rem;
+  /* Short opening stroke at scroll 0, then the line turns around each block. */
+  --wrap-start: 7rem;
+  --line-wrap-pad: 1.125rem;
+  --line-wrap-radius: 1.5rem;
+  --line-cluster-gap: 4.5rem;
   /* Lateral bow of the stem where a gap allows it. */
   --line-bend: 1.75rem;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
@@ -127,8 +123,8 @@
   --vb-spine: 80px;
   --vb-spine-h: 240px;
   --vb-leaf: 48px;
-  --line-stroke: 2.4;
-  --line-stroke-thin: 1.75;
+  --line-stroke: 1.35;
+  --line-stroke-thin: 1.35;
   --line-final: 22rem;
   --z-header: 40; --z-bar: 50;
   --color-on-primary: #FFFFFF;
@@ -144,16 +140,16 @@
     --tracking-display: -0.03em;
     --leading-display: 1.24;
     --header-h: 4rem;
-    --line-butterfly: 12.5rem;
+    --line-butterfly: 4.25rem;
     --line-stem: 1.65rem;
     --line-leaf: 2.25rem;
     --line-leaf-gap: 5.5rem;
+    --line-stroke-wrap: 2px;
     --line-stroke-stem: 2px;
-    --line-stroke-vein: 1.25px;
-    --line-stroke-wing: 2px;
     --line-bend: 1.15rem;
-    --line-join: 6.5rem;
-    --line-hook: 3rem;
-    --line-wrap-gap: 0.875rem;
+    --wrap-start: 5.5rem;
+    --line-wrap-pad: 0.875rem;
+    --line-wrap-radius: 1.125rem;
+    --line-cluster-gap: 3.5rem;
   }
 }

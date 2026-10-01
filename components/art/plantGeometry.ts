@@ -558,7 +558,7 @@ function placeLeaves(
     if (room < 36 || portal.y1 - portal.y0 < 72) continue;
     const width = Math.min(leaf * 0.78, room);
     const length = Math.min(leaf, (portal.y1 - portal.y0) * 0.55);
-    if (width < 36 || length < 48) continue;
+    if (width < Math.max(36, leaf * 0.55) || length < Math.min(leaf, 72)) continue;
     const baseY = Math.min(portal.y1 - 6, portal.y0 + length + (portal.y1 - portal.y0) * 0.12);
     const box = inflate({ x: portal.x - width / 2, y: baseY - length, w: width, h: length }, stroke / 2);
     if (box.y < 0 || bottomOf(box) > height) continue;
@@ -569,6 +569,32 @@ function placeLeaves(
     spots.push({ y: baseY, leaf: leafParts(portal.x, baseY, length, width) });
   }
   return spots;
+}
+
+function calmRoute(points: Point[], pageWidth: number, stroke: number) {
+  const forward = dedupe(points).filter((point, index, all) => index === 0 || point[1] >= (all[index - 1]?.[1] ?? 0) - 0.5);
+  const first = forward[0];
+  const last = forward[forward.length - 1];
+  if (!first || !last || forward.length < 2) return forward;
+  const step = 56;
+  const minX = stroke + 16;
+  const maxX = Math.max(minX, pageWidth - stroke - 16);
+  const out: Point[] = [[Math.min(maxX, Math.max(minX, first[0])), first[1]]];
+  for (let y = first[1] + step; y < last[1] - 8; y += step) {
+    const near = forward.filter((point) => Math.abs(point[1] - y) <= step);
+    const pool = near.length > 0 ? near : [pointAtY(forward, y)];
+    const xs = pool.map((point) => point[0]).sort((a, b) => a - b);
+    const mid = xs[Math.floor(xs.length / 2)] ?? first[0];
+    const sway = Math.sin((y - first[1]) / 260) * 32;
+    const target = Math.min(maxX, Math.max(minX, mid + sway));
+    const prev = out[out.length - 1] ?? first;
+    const maxDx = step * 0.48;
+    const x = prev[0] + Math.max(-maxDx, Math.min(maxDx, target - prev[0]));
+    out.push([Math.min(maxX, Math.max(minX, x)), y]);
+  }
+  const prev = out[out.length - 1] ?? first;
+  out.push([Math.min(maxX, Math.max(minX, prev[0] + Math.max(-80, Math.min(80, last[0] - prev[0])))), last[1]]);
+  return out;
 }
 
 function pointAtY(points: Point[], y: number) {
@@ -707,8 +733,9 @@ export function buildPlant({
   });
   const minX = stroke;
   const maxX = Math.max(minX, width - stroke);
-  const joined = takeJoin(routed.points, Math.min(120, Math.max(84, leaf * 0.75)));
-  const leafSpots = placeLeaves(routed.portals, routed.points, obstacles, leaf, stroke, height);
+  const calmed = calmRoute(routed.points, width, stroke);
+  const joined = takeJoin(calmed, Math.min(120, Math.max(84, leaf * 0.75)));
+  const leafSpots = placeLeaves(routed.portals, calmed, obstacles, leaf, stroke, height);
   const leaves = [...leafSpots, ...extraLeaves(joined.rest, photos, leaf, stroke, width, leafSpots.map((spot) => spot.y))]
     .sort((a, b) => a.y - b.y)
     .slice(0, 3);

@@ -22,8 +22,15 @@ export function LineDraw({
     if (!document.documentElement.classList.contains("motion-ready")) return;
 
     if (mode === "now") {
-      const frame = requestAnimationFrame(() => node.classList.add("is-drawn"));
-      return () => cancelAnimationFrame(frame);
+      // Two frames so the scaled dash is painted before the stroke starts.
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => node.classList.add("is-drawn"));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
     }
 
     const observer = new IntersectionObserver(

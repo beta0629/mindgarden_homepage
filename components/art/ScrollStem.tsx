@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { buildPlant, type Obstacle, type PlantGeometry } from "@/components/art/plantGeometry";
+import { buildPlant, type PlantGeometry } from "@/components/art/plantGeometry";
 
 function readPx(name: string) {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -13,31 +13,22 @@ function readPx(name: string) {
   return value;
 }
 
-function boxesIn(host: HTMLElement, stem: HTMLElement) {
-  const stemBox = stem.getBoundingClientRect();
-  const rel = (el: HTMLElement) => {
-    const box = el.getBoundingClientRect();
-    return {
-      x: box.left - stemBox.left,
-      y: box.top - stemBox.top,
-      w: box.width,
-      h: box.height,
-    };
-  };
-  const visible = (el: HTMLElement) => {
-    if (el.closest(".scroll-stem, .plant-anchor, .mobile-cta")) return false;
-    const style = getComputedStyle(el);
-    return style.display !== "none" && style.visibility !== "hidden";
-  };
-  const photos: Obstacle[] = [...host.querySelectorAll<HTMLElement>(".media-frame, .map-frame")]
-    .filter(visible)
-    .map((el) => ({ ...rel(el), kind: "photo" as const }))
-    .filter((box) => box.w > 48 && box.h > 48 && box.y < stemBox.height && box.y + box.h > 0);
-  const blocks: Obstacle[] = [...host.querySelectorAll<HTMLElement>("h1, h2, h3, p, li, blockquote, figcaption, button")]
-    .filter((el) => visible(el) && !el.closest(".media-frame, .map-frame"))
-    .map((el) => ({ ...rel(el), kind: "block" as const }))
-    .filter((box) => box.w > 32 && box.h > 14 && box.y < stemBox.height && box.y + box.h > 0);
-  return { photos, blocks, stemBox };
+function statCells(host: HTMLElement, stemBox: DOMRect) {
+  return [...host.querySelectorAll<HTMLElement>(".stat-rail .stat-cell")]
+    .filter((el) => {
+      const style = getComputedStyle(el);
+      return style.display !== "none" && style.visibility !== "hidden";
+    })
+    .map((el) => {
+      const box = el.getBoundingClientRect();
+      return {
+        x: box.left - stemBox.left,
+        y: box.top - stemBox.top,
+        w: box.width,
+        h: box.height,
+      };
+    })
+    .filter((box) => box.w > 32 && box.h > 24 && box.y < stemBox.height && box.y + box.h > 0);
 }
 
 function WrapPaths({ geo, tone }: { geo: PlantGeometry; tone: "brand" | "onDark" }) {
@@ -61,45 +52,24 @@ export function ScrollStem({ children }: { children: ReactNode }) {
 
     const update = () => {
       const stem = host.querySelector<HTMLElement>(".scroll-stem");
-      const anchor = host.querySelector<HTMLElement>(".plant-anchor");
-      if (!stem || !anchor) return;
-      const { photos, blocks, stemBox } = boxesIn(host, stem);
-      const anchorBox = anchor.getBoundingClientRect();
-      if (stemBox.width < 2 || stemBox.height < 2 || anchorBox.width < 2) return;
-      const radius = readPx("--line-wrap-radius") || 24;
-      const pad = readPx("--line-wrap-pad") || 18;
-      const arm = readPx("--line-corner-arm") || 88;
-      const clusterGap = readPx("--line-cluster-gap") || 72;
-      const hero = anchor.closest("section");
-      const heroBox = hero?.getBoundingClientRect();
-      const focusY = heroBox ? heroBox.bottom - stemBox.top + 4 : anchorBox.bottom - stemBox.top + 4;
-      let checksum = photos.length * 13 + blocks.length;
-      for (const box of [...photos, ...blocks]) {
+      if (!stem) return;
+      const stemBox = stem.getBoundingClientRect();
+      if (stemBox.width < 2 || stemBox.height < 2) return;
+      const gap = readPx("--line-stat-gap") || 18;
+      const cells = statCells(host, stemBox);
+      let checksum = cells.length;
+      for (const box of cells) {
         checksum = (checksum + Math.round(box.x) * 3 + Math.round(box.y) * 5 + Math.round(box.w) + Math.round(box.h) * 7) | 0;
       }
-      const nextSignature = [
-        stemBox.width.toFixed(0),
-        stemBox.height.toFixed(0),
-        focusY.toFixed(0),
-        radius.toFixed(0),
-        pad.toFixed(0),
-        arm.toFixed(0),
-        clusterGap.toFixed(0),
-        String(checksum),
-      ].join(":");
+      const nextSignature = [stemBox.width.toFixed(0), stemBox.height.toFixed(0), gap.toFixed(0), String(checksum)].join(":");
       if (nextSignature !== signature.current) {
         signature.current = nextSignature;
         setGeo(
           buildPlant({
             width: stemBox.width,
             height: stemBox.height,
-            focusY,
-            photos,
-            blocks,
-            radius,
-            pad,
-            arm,
-            clusterGap,
+            cells,
+            gap,
           }),
         );
       }

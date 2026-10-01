@@ -104,9 +104,10 @@
   --line-stroke-stem: 2px;
   --line-stroke-vein: 1.25px;
   --line-stroke-wing: 1.35px;
-  /* Faint accent line behind text and photos. */
-  --line-opacity: 0.4;
-  /* Length of the single corner hook. It stops well short of framing a block. */
+  /* Faint accent line above the stat row. */
+  --line-opacity: 0.45;
+  /* Clearance between that stroke and the tops of the four stat numbers. */
+  --line-stat-gap: 1.125rem;
   --line-corner-arm: 5.5rem;
   --line-leaf-gap: 7rem;
   --line-butterfly-gap: 16px;
@@ -147,6 +148,7 @@
     --line-leaf: 2.25rem;
     --line-leaf-gap: 5.5rem;
     --line-stroke-wrap: 1.75px;
+    --line-stat-gap: 0.875rem;
     --line-corner-arm: 4.25rem;
     --line-stroke-stem: 2px;
     --line-bend: 1.15rem;

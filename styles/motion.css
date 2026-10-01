@@ -78,6 +78,10 @@
   isolation: isolate;
 }
 
+html {
+  overflow-x: clip;
+}
+
 /* Offscreen sections skip layout, so the stem would be measured through the
    wrong gaps. Keep them painted. Their own overflow still clips decoration. */
 .scroll-stem-host .section-defer {

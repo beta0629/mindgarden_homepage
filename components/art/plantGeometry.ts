@@ -843,7 +843,7 @@ function takeJoin(points: Point[], length: number) {
 }
 
 
-/** A few leaves on the open stem of the first screen, each clear of the butterfly and of each other. */
+/** One leaf on the open stem of the first screen, clear of the butterfly. */
 function heroSprig(
   points: Point[],
   anchor: Box,
@@ -861,7 +861,7 @@ function heroSprig(
   const placed: PlacedLeaf[] = [];
   const limitY = butterfly.y + butterfly.h + leaf * 4.5;
   let cursor = 0;
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 1; index += 1) {
     let found: (PlacedLeaf & { dist: number }) | null = null;
     for (let dist = cursor; dist <= total; dist += 8) {
       const stem = pointAtArc(points, cum, dist);

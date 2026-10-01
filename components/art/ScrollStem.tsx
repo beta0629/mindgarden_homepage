@@ -61,7 +61,14 @@ function PlantPaths({
         <path key={`stem-${index}`} className={`plant-stem plant-stem-${index}`} d={d} pathLength={1} />
       ))}
       {geo.leaves.map((leaf, index) => (
-        <g key={`leaf-${index}`} className={`plant-leaf-group plant-leaf-${index}`}>
+        <g
+          key={`leaf-${index}`}
+          className={
+            leaf.home
+              ? "plant-leaf-group plant-leaf-home"
+              : `plant-leaf-group plant-leaf-${geo.leaves.slice(0, index).filter((item) => !item.home).length}`
+          }
+        >
           <path className="plant-leaf-outline" d={leaf.outline} pathLength={1} />
           <path className="plant-leaf-midrib" d={leaf.midrib} pathLength={1} />
           {leaf.veins.map((d, vein) => (

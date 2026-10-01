@@ -334,7 +334,7 @@ html.motion-ready .plant-wings.is-drawn :is(.plant-wing, .plant-join) {
       animation-range: 0% 94%;
     }
 
-    html.motion-ready .plant-leaf-group :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
+    html.motion-ready .plant-leaf-group:not(.plant-leaf-home) :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
       stroke-dasharray: 1;
       stroke-dashoffset: 1;
       animation-name: plant-stroke-draw;
@@ -344,7 +344,13 @@ html.motion-ready .plant-wings.is-drawn :is(.plant-wing, .plant-join) {
       animation-timeline: scroll(root block);
     }
 
-    /* Upper: one leaf, after the first screen. No leaf is finished at scroll 0. */
+    html.motion-ready .plant-leaf-home :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
+      animation: none;
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+    }
+
+    /* Later leaves start only after the first screen. Each one finishes before the next. */
     html.motion-ready .plant-leaf-0 .plant-leaf-outline { animation-range: 12% 18%; }
     html.motion-ready .plant-leaf-0 :is(.plant-leaf-midrib, .plant-leaf-vein) { animation-range: 18% 21%; }
 

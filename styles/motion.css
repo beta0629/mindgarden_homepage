@@ -332,8 +332,11 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   0% {
     stroke-dashoffset: 1;
   }
+  6% {
+    stroke-dashoffset: 0.66;
+  }
   22% {
-    stroke-dashoffset: 0.42;
+    stroke-dashoffset: 0.32;
   }
   100% {
     stroke-dashoffset: 0;
@@ -457,7 +460,7 @@ html.motion-ready .wrap-line {
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
-      animation-range: 15% 92%;
+      animation-range: 12% 88%;
     }
   }
 }

@@ -48,19 +48,19 @@ export default function HomePage() {
 
   return (
     <main>
-      <Hero
-        eyebrow={home.hero.eyebrow}
-        titleLines={[...home.hero.titleLines]}
-        lead={home.hero.lead}
-        primaryCta={home.hero.primaryCta}
-        notes={[...home.hero.note]}
-        image={home.hero.image}
-        floatCard={home.hero.floatCard}
-        booking={bookingLink}
-        phone={phoneLink}
-      />
-      <StatStrip items={home.stats.map((item) => ({ ...item, sub: "sub" in item ? item.sub : undefined }))} />
-      <ScrollStem side="end">
+      <ScrollStem>
+        <Hero
+          eyebrow={home.hero.eyebrow}
+          titleLines={[...home.hero.titleLines]}
+          lead={home.hero.lead}
+          primaryCta={home.hero.primaryCta}
+          notes={[...home.hero.note]}
+          image={home.hero.image}
+          floatCard={home.hero.floatCard}
+          booking={bookingLink}
+          phone={phoneLink}
+        />
+        <StatStrip items={home.stats.map((item) => ({ ...item, sub: "sub" in item ? item.sub : undefined }))} />
         <ProgramGrid
           eyebrow={home.programs.eyebrow}
           title={home.programs.title}
@@ -68,19 +68,18 @@ export default function HomePage() {
           items={home.programs.items}
           more={{ label: home.programs.more, href: "/programs" }}
         />
-      </ScrollStem>
-      <FirstVisit
-        eyebrow={home.firstVisit.eyebrow}
-        title={home.firstVisit.title}
-        lead={home.firstVisit.lead}
-        price={home.firstVisit.price}
-        priceNote={home.firstVisit.priceNote}
-        includes={[...home.firstVisit.includes]}
-        cta={home.firstVisit.cta}
-        image={home.firstVisit.image}
-        booking={bookingLink}
-      />
-      <ScrollStem side="start">
+        <FirstVisit
+          eyebrow={home.firstVisit.eyebrow}
+          title={home.firstVisit.title}
+          lead={home.firstVisit.lead}
+          price={home.firstVisit.price}
+          priceNote={home.firstVisit.priceNote}
+          includes={[...home.firstVisit.includes]}
+          cta={home.firstVisit.cta}
+          image={home.firstVisit.image}
+          booking={bookingLink}
+          mark={false}
+        />
         <DirectorBlock
           eyebrow={home.director.eyebrow}
           quote={home.director.quote}
@@ -91,23 +90,20 @@ export default function HomePage() {
           imageNote={home.director.imageNote}
           cta={{ label: home.director.cta, href: "/about/director" }}
         />
-      </ScrollStem>
-      <PrivacyBand
-        eyebrow={home.privacy.eyebrow}
-        title={home.privacy.title}
-        lead={home.privacy.lead}
-        points={home.privacy.points}
-        image={home.privacy.image}
-      />
-      <ScrollStem side="start">
+        <PrivacyBand
+          eyebrow={home.privacy.eyebrow}
+          title={home.privacy.title}
+          lead={home.privacy.lead}
+          points={home.privacy.points}
+          image={home.privacy.image}
+          flowStem
+        />
         <SpaceBento
           eyebrow={home.space.eyebrow}
           title={home.space.title}
           lead={home.space.lead}
           items={home.space.items.map((item) => ({ ...item }))}
         />
-      </ScrollStem>
-      <ScrollStem side="end">
         <PricingCards
           eyebrow={home.pricing.eyebrow}
           title={home.pricing.title}
@@ -115,22 +111,14 @@ export default function HomePage() {
           note={home.pricing.note}
           cta={{ label: home.pricing.cta, href: "/pricing" }}
         />
-      </ScrollStem>
-      <ScrollStem side="start">
         <ProcessSteps eyebrow={home.process.eyebrow} title={home.process.title} steps={home.process.steps} />
-      </ScrollStem>
-      <ScrollStem side="end">
         <FaqList
           eyebrow={home.faq.eyebrow}
           title={home.faq.title}
           items={home.faq.items}
           more={{ label: home.faq.more, href: "/faq" }}
         />
-      </ScrollStem>
-      <ScrollStem side="start">
         <Channels eyebrow={home.channels.eyebrow} title={home.channels.title} items={channelItems} />
-      </ScrollStem>
-      <ScrollStem side="end">
         <LocationBlock
           eyebrow={home.location.eyebrow}
           title={home.location.title}
@@ -138,16 +126,17 @@ export default function HomePage() {
           image={home.location.mapImage}
           ctas={mapLinks}
         />
+        <FinalCta
+          title={home.finalCta.title}
+          lead={home.finalCta.lead}
+          primary={home.finalCta.primary}
+          booking={bookingLink}
+          chat={chat}
+          phone={phoneLink}
+          contact={{ label: contactData.title, href: "/contact", external: false }}
+          flowStem
+        />
       </ScrollStem>
-      <FinalCta
-        title={home.finalCta.title}
-        lead={home.finalCta.lead}
-        primary={home.finalCta.primary}
-        booking={bookingLink}
-        chat={chat}
-        phone={phoneLink}
-        contact={{ label: contactData.title, href: "/contact", external: false }}
-      />
     </main>
   );
 }

@@ -97,6 +97,11 @@
   --line-butterfly: 12rem;
   --line-stem: 2.75rem;
   --line-leaf: 3rem;
+  /* Stem starts under the hero butterfly and runs into the footer. */
+  --page-stem-start: calc(var(--space-6) + var(--line-butterfly) * 0.75 + var(--space-5));
+  --page-stem-footer: var(--space-20);
+  /* Share of the dash still hidden at scroll 0, so the first screen shows the start. */
+  --stem-shown-start: 0.88;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
   --vb-butterfly: 544px;
   --vb-stem: 120px;
@@ -126,5 +131,10 @@
     --line-butterfly: 8rem;
     --line-stem: 1.65rem;
     --line-leaf: 1.35rem;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --page-stem-start: calc(var(--space-20) + var(--line-butterfly) * 0.75 + var(--space-8));
   }
 }

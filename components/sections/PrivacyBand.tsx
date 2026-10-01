@@ -2,6 +2,7 @@ import { LineArt } from "@/components/art/LineArt";
 import { Container } from "@/components/layout/Container";
 import { Photo } from "@/components/media/Photo";
 import { TextLines } from "@/components/sections/SectionHeader";
+import { cn } from "@/lib/utils";
 import type { Media } from "@/lib/types";
 
 export function PrivacyBand({
@@ -10,15 +11,22 @@ export function PrivacyBand({
   lead,
   points,
   image,
+  flowStem = false,
 }: {
   eyebrow: string;
   title: string;
   lead: string;
   points: { title: string; desc: string }[];
   image: Media;
+  flowStem?: boolean;
 }) {
   return (
-    <section className="section-defer relative overflow-hidden bg-deep py-section text-on-deep">
+    <section
+      className={cn(
+        "section-defer relative overflow-hidden bg-deep py-section text-on-deep",
+        flowStem && "page-stem-band",
+      )}
+    >
       <LineArt kind="vine" tone="onDark" className="pointer-events-none absolute inset-x-0 top-8" />
       <Container className="relative grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col gap-8">

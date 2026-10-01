@@ -2,6 +2,7 @@ import { LineArt } from "@/components/art/LineArt";
 import { Container } from "@/components/layout/Container";
 import { ButtonLink } from "@/components/links/ButtonLink";
 import { SiteLink } from "@/components/links/SiteLink";
+import { cn } from "@/lib/utils";
 import type { LinkItem } from "@/lib/types";
 
 export function FinalCta({
@@ -12,6 +13,7 @@ export function FinalCta({
   chat,
   phone,
   contact,
+  flowStem = false,
 }: {
   title: string;
   lead: string;
@@ -20,9 +22,10 @@ export function FinalCta({
   chat: LinkItem;
   phone: LinkItem;
   contact?: LinkItem;
+  flowStem?: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden bg-deep py-section text-on-deep">
+    <section className={cn("relative overflow-hidden bg-deep py-section text-on-deep", flowStem && "page-stem-band")}>
       <LineArt
         kind="butterfly"
         tone="onDark"

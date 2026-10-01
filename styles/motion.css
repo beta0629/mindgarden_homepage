@@ -75,7 +75,8 @@
 
 .scroll-stem {
   position: absolute;
-  inset-block: 0;
+  top: var(--page-stem-start);
+  bottom: calc(-1 * var(--page-stem-footer));
   inset-inline-start: max(var(--space-1), calc((100% - var(--container)) / 2));
   width: var(--line-stem);
   pointer-events: none;
@@ -85,6 +86,20 @@
 .scroll-stem .line-draw {
   display: block;
   width: 100%;
+}
+
+/* Same path, shown only across deep bands in the on-dark green. */
+.scroll-stem-dark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  clip-path: url(#page-stem-dark);
+}
+
+.scroll-stem-clip {
+  position: absolute;
+  width: 0;
+  height: 0;
 }
 
 .scroll-stem-line,
@@ -126,6 +141,13 @@
 
 .scroll-stem-mirrored .scroll-leaf-c {
   inset-block-start: 80%;
+}
+
+@media (max-width: 640px) {
+  .scroll-stem .scroll-leaf {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+  }
 }
 
 /* non-scaling-stroke dashes in host pixels. A unitless 1 finishes while the
@@ -180,6 +202,15 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
 
 @keyframes stem-grow {
   from {
+    stroke-dashoffset: calc(var(--draw-scale) * var(--stem-shown-start));
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes leaf-grow {
+  from {
     stroke-dashoffset: var(--draw-scale);
   }
   to {
@@ -187,21 +218,41 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   }
 }
 
-/* Each section stem grows while that stretch enters the viewport.
-   Leaves stay on the once-only draw. Without view timelines, the
-   intersection observer draws the stem once. */
-@supports ((animation-timeline: view()) and (animation-range: entry)) {
+/* One document timeline: the stem grows from the hero toward the footer,
+   and leaves draw when that same progress reaches them.
+   Browsers without scroll timelines keep the once-only intersection draw. */
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
     html.motion-ready .line-draw-grow path {
       animation-name: stem-grow;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
-      animation-timeline: view(block);
-      animation-range: entry;
+      animation-timeline: scroll(root block);
     }
 
-    html.motion-ready .line-draw-grow.is-drawn path {
+    html.motion-ready .line-draw-leaf path {
+      animation-name: leaf-grow;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+    }
+
+    html.motion-ready .scroll-leaf-a path {
+      animation-range: 10% 18%;
+    }
+
+    html.motion-ready .scroll-leaf-b path {
+      animation-range: 38% 48%;
+    }
+
+    html.motion-ready .scroll-leaf-c path {
+      animation-range: 66% 76%;
+    }
+
+    html.motion-ready .line-draw-grow.is-drawn path,
+    html.motion-ready .line-draw-leaf.is-drawn path {
       transition: none;
     }
   }

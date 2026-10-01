@@ -16,6 +16,7 @@ export function FirstVisit({
   cta,
   image,
   booking,
+  mark = true,
 }: {
   eyebrow: string;
   title: string;
@@ -26,13 +27,14 @@ export function FirstVisit({
   cta: string;
   image: Media;
   booking: LinkItem;
+  mark?: boolean;
 }) {
   return (
     <section className="section-defer bg-sand py-section">
       <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <div className="relative">
-          <LineArt kind="stem" className="absolute -left-2 top-0 hidden w-16 lg:block" />
-          <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" className="lg:ml-12" />
+          {mark ? <LineArt kind="stem" className="absolute -left-2 top-0 hidden w-16 lg:block" /> : null}
+          <Photo image={image} frame="portrait" sizes="(max-width: 1024px) 100vw, 42vw" className={mark ? "lg:ml-12" : undefined} />
         </div>
         <div className="flex flex-col gap-8">
           <p className="type-eyebrow-en">{eyebrow}</p>

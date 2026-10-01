@@ -78,11 +78,10 @@
   isolation: isolate;
 }
 
-/* These properties create stacking contexts, which would paint a whole section
-   under the stem and let the stroke cover its photo. */
-.scroll-stem-host :is(.section-defer, .page-stem-band) {
+/* Offscreen sections skip layout, so the stem would be measured through the
+   wrong gaps. Keep them painted. Their own overflow still clips decoration. */
+.scroll-stem-host .section-defer {
   content-visibility: visible;
-  overflow: visible;
 }
 
 /* The plant is behind text and photos. Leaves in the gaps stay visible. */
@@ -105,7 +104,7 @@ html.motion-ready .plant-anchor,
   top: 0;
   bottom: calc(-1 * var(--page-stem-footer));
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 /* Same path, shown only across deep bands in the on-dark green. */

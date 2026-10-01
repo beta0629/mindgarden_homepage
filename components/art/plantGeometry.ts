@@ -160,15 +160,13 @@ function stemXAt(y: number, exitY: number, endY: number, stemX: number, amplitud
 }
 
 function leafPath(x: number, y: number, length: number, width: number) {
-  const tipX = x + width * 0.22;
+  const tipX = x + width * 0.28;
   const tipY = y - length;
-  const sideX = x + width;
-  const sideY = y - length * 0.42;
   return [
     `M${round(x)} ${round(y)}`,
-    `C${round(x + width * 0.2)} ${round(y - length * 0.06)} ${round(x + width * 0.86)} ${round(y - length * 0.22)} ${round(sideX)} ${round(sideY)}`,
-    `C${round(x + width * 0.78)} ${round(y - length * 0.68)} ${round(tipX + width * 0.16)} ${round(tipY + length * 0.14)} ${round(tipX)} ${round(tipY)}`,
-    `C${round(tipX - width * 0.28)} ${round(tipY + length * 0.2)} ${round(x + width * 0.06)} ${round(y - length * 0.36)} ${round(x)} ${round(y - length * 0.02)}`,
+    `C${round(x + width * 0.55)} ${round(y - length * 0.08)} ${round(x + width)} ${round(y - length * 0.28)} ${round(x + width * 0.92)} ${round(y - length * 0.52)}`,
+    `C${round(x + width * 0.78)} ${round(y - length * 0.78)} ${round(x + width * 0.48)} ${round(tipY + length * 0.08)} ${round(tipX)} ${round(tipY)}`,
+    `C${round(x + width * 0.08)} ${round(tipY + length * 0.16)} ${round(x + width * 0.02)} ${round(y - length * 0.42)} ${round(x)} ${round(y - length * 0.04)}`,
     "Z",
   ].join("");
 }
@@ -223,7 +221,7 @@ export function buildPlant({
   ].join("");
 
   const leafLength = leaf;
-  const leafWidth = leaf * 0.62;
+  const leafWidth = leaf * 0.92;
   const leaves = leafYs.map((y) => {
     const x = stemXAt(y, exitY, endY, stemX, amplitude);
     return leafPath(x, y, leafLength, leafWidth);

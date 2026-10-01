@@ -318,15 +318,15 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
     }
 
     html.motion-ready .plant-leaf-0 {
-      animation-range: 12% 24%;
+      animation-range: 0% 9%;
     }
 
     html.motion-ready .plant-leaf-1 {
-      animation-range: 38% 50%;
+      animation-range: 22% 34%;
     }
 
     html.motion-ready .plant-leaf-2 {
-      animation-range: 64% 78%;
+      animation-range: 58% 74%;
     }
   }
 }

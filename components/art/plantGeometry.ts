@@ -2,43 +2,62 @@ export type Box = { x: number; y: number; w: number; h: number };
 
 export type PlantGeometry = {
   viewBox: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  radius: number;
+  d: string;
 };
 
 function round(n: number) {
   return Math.round(n * 10) / 10;
 }
 
+/** Quarter-circle cubic from straight down into a rightward run. */
+const KAPPA = 0.5522847498;
+
 /**
- * One rounded frame around the programs text block.
- * The box is the copy only, so the stroke does not enclose photos
- * and does not continue down the page.
+ * One open stroke: above the programs heading, down its left side,
+ * then a single rounded turn under the first photo. It does not close
+ * around the title and does not continue down the page.
  */
 export function buildPlant({
   width,
   height,
   text,
+  card,
   pad,
+  under,
   radius,
 }: {
   width: number;
   height: number;
   text: Box | null;
+  card: Box | null;
   pad: number;
+  under: number;
   radius: number;
 }): PlantGeometry {
-  const viewBox = `0 0 ${round(width)} ${round(height)}`;
-  const empty = { viewBox, x: 0, y: 0, w: 0, h: 0, radius: 0 };
-  if (!text || width < 2 || height < 2) return empty;
-  const x = text.x - pad;
-  const y = text.y - pad;
-  const w = text.w + pad * 2;
-  const h = text.h + pad * 2;
-  if (w < 64 || h < 48 || x < 0 || y < 0 || x + w > width + 1 || y + h > height + 1) return empty;
-  const corner = Math.min(Math.max(0, radius), w / 2, h / 2);
-  return { viewBox, x: round(x), y: round(y), w: round(w), h: round(h), radius: round(corner) };
+  const viewBox = `0 0 ${width} ${height}`;
+  const empty = { viewBox, d: "" };
+  if (!text || !card || width < 2 || height < 2) return empty;
+  if (card.y < text.y || card.h < 32 || card.w < 32) return empty;
+
+  const left = Math.max(8, Math.min(text.x, card.x) - pad);
+  const top = Math.max(0, text.y - pad);
+  const bottom = card.y + card.h + Math.max(0, under);
+  const end = card.x + card.w;
+  if (bottom <= text.y + text.h) return empty;
+  if (top < 0 || left < 0 || bottom > height || end > width) return empty;
+
+  const rise = bottom - top;
+  const span = end - left;
+  const r = Math.min(Math.max(0, radius), rise * 0.45, span * 0.45);
+  if (r < 12 || span < r + 16 || rise < r + 24) return empty;
+
+  const yArc = bottom - r;
+  const handle = r * (1 - KAPPA);
+  const d = [
+    `M ${round(left)} ${round(top)}`,
+    `L ${round(left)} ${round(yArc)}`,
+    `C ${round(left)} ${round(bottom - handle)} ${round(left + handle)} ${round(bottom)} ${round(left + r)} ${round(bottom)}`,
+    `L ${round(end)} ${round(bottom)}`,
+  ].join(" ");
+  return { viewBox, d };
 }

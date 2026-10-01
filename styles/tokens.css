@@ -99,8 +99,8 @@
   --line-leaf: 2.75rem;
   /* The line overlay runs the full page and continues a short way into the footer. */
   --page-stem-footer: 12rem;
-  /* On-screen stroke of the programs text wrap. The viewBox is 1 CSS pixel per user unit. */
-  --line-stroke-wrap: 8px;
+  /* On-screen stroke of the programs line. The viewBox is 1 CSS pixel per user unit. */
+  --line-stroke-wrap: 10px;
   --line-stroke-stem: 2px;
   --line-stroke-vein: 1.25px;
   --line-stroke-wing: 1.35px;
@@ -109,9 +109,11 @@
   --line-leaf-gap: 7rem;
   --line-butterfly-gap: 16px;
   --wrap-start: 7rem;
-  /* Gap between the programs copy and the 8px rounded stroke. */
+  /* Gap between the programs copy and the stroke above it and on its left. */
   --line-wrap-pad: 1.75rem;
-  /* Card-corner radius of that stroke. Large enough to read as a turn, not a sharp box. */
+  /* Centerline sits this far under the first photo so the 10px stroke clears the card. */
+  --line-wrap-under: 8px;
+  /* Radius of the single turn under that photo. Large enough to read as a curve. */
   --line-wrap-radius: 2rem;
   --line-cluster-gap: 4.5rem;
   /* Lateral bow of the stem where a gap allows it. */
@@ -145,7 +147,7 @@
     --line-stem: 1.65rem;
     --line-leaf: 2.25rem;
     --line-leaf-gap: 5.5rem;
-    --line-stroke-wrap: 8px;
+    --line-stroke-wrap: 10px;
     --line-corner-arm: 4.25rem;
     --line-stroke-stem: 2px;
     --line-bend: 1.15rem;

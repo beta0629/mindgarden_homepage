@@ -28,11 +28,27 @@ function programCopy(host: HTMLElement, stemBox: DOMRect) {
   };
 }
 
+function programCard(host: HTMLElement, stemBox: DOMRect) {
+  const copy = host.querySelector(".program-copy");
+  const card = copy?.closest("section")?.querySelector<HTMLElement>(".program-photo");
+  if (!card) return null;
+  const style = getComputedStyle(card);
+  if (style.display === "none" || style.visibility === "hidden") return null;
+  const box = card.getBoundingClientRect();
+  if (box.width < 32 || box.height < 32) return null;
+  return {
+    x: box.left - stemBox.left,
+    y: box.top - stemBox.top,
+    w: box.width,
+    h: box.height,
+  };
+}
+
 function WrapPaths({ geo, tone }: { geo: PlantGeometry; tone: "brand" | "onDark" }) {
-  if (geo.w < 2 || geo.h < 2) return null;
+  if (!geo.d) return null;
   return (
-    <svg className={tone === "onDark" ? "plant-svg plant-on-dark" : "plant-svg"} viewBox={geo.viewBox} preserveAspectRatio="xMinYMin meet" aria-hidden="true">
-      <rect className="wrap-line" x={geo.x} y={geo.y} width={geo.w} height={geo.h} rx={geo.radius} ry={geo.radius} pathLength={1} />
+    <svg className={tone === "onDark" ? "plant-svg plant-on-dark" : "plant-svg"} viewBox={geo.viewBox} preserveAspectRatio="none" aria-hidden="true">
+      <path className="wrap-line" d={geo.d} pathLength={1} />
     </svg>
   );
 }
@@ -54,10 +70,13 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       const stemBox = stem.getBoundingClientRect();
       if (stemBox.width < 2 || stemBox.height < 2) return;
       const pad = readPx("--line-wrap-pad") || 28;
+      const under = readPx("--line-wrap-under") || 8;
       const radius = readPx("--line-wrap-radius") || 32;
       const text = programCopy(host, stemBox);
-      const checksum = text ? [Math.round(text.x), Math.round(text.y), Math.round(text.w), Math.round(text.h)].join(",") : "none";
-      const nextSignature = [stemBox.width.toFixed(0), stemBox.height.toFixed(0), pad.toFixed(0), radius.toFixed(0), checksum].join(":");
+      const card = programCard(host, stemBox);
+      const textSum = text ? [text.x, text.y, text.w, text.h].map((n) => Math.round(n)).join(",") : "none";
+      const cardSum = card ? [card.x, card.y, card.w, card.h].map((n) => Math.round(n)).join(",") : "none";
+      const nextSignature = [stemBox.width.toFixed(1), stemBox.height.toFixed(1), pad.toFixed(1), under.toFixed(1), radius.toFixed(1), textSum, cardSum].join(":");
       if (nextSignature !== signature.current) {
         signature.current = nextSignature;
         setGeo(
@@ -65,7 +84,9 @@ export function ScrollStem({ children }: { children: ReactNode }) {
             width: stemBox.width,
             height: stemBox.height,
             text,
+            card,
             pad,
+            under,
             radius,
           }),
         );

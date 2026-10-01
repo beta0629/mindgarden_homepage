@@ -160,15 +160,13 @@ footer :is(a, p, li, span, img) {
   stroke-width: var(--line-stroke-wing);
 }
 
-/* 8px #438646 stroke. Radius is the same token the rect corner uses. */
+/* 10px #438646 stroke. One open path; the corner radius is baked into that path. */
 .wrap-line {
   fill: none;
   stroke: var(--color-draw);
   stroke-width: var(--line-stroke-wrap);
   stroke-linecap: round;
   stroke-linejoin: round;
-  rx: var(--line-wrap-radius);
-  ry: var(--line-wrap-radius);
   opacity: 1;
 }
 
@@ -321,7 +319,8 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   }
 }
 
-/* One stroke around the programs text. pathLength is 1, so a dash of 1 is the whole wrap.
+/* One open stroke from above the programs title to under the first photo.
+   pathLength is 1, so a dash of 1 is the whole stroke.
    It stays unpainted on the hero, then finishes as that text block enters. */
 @keyframes wrap-draw {
   from {

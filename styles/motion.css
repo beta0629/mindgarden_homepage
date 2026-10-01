@@ -344,7 +344,7 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
-      animation-range: 0% 62%;
+      animation-range: 0% 36%;
     }
 
     html.motion-ready .plant-leaf-group :is(.plant-leaf-outline, .plant-leaf-midrib, .plant-leaf-vein) {
@@ -358,12 +358,12 @@ html.motion-ready .plant-wings.is-drawn .plant-wing {
     }
 
     /* Three leaves, far apart, after the opening stroke. */
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-outline { animation-range: 16% 24%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 23% 28%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-outline { animation-range: 36% 44%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 43% 48%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-outline { animation-range: 54% 62%; }
-    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 60% 66%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-outline { animation-range: 8% 13%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(1 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 12% 16%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-outline { animation-range: 17% 22%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(2 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 21% 25%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-outline { animation-range: 27% 32%; }
+    html.motion-ready .plant-svg > .plant-leaf-group:nth-child(3 of .plant-leaf-group) .plant-leaf-midrib { animation-range: 31% 35%; }
   }
 }
 

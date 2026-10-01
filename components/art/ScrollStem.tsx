@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
-import { buildPlant, type PlantGeometry } from "@/components/art/plantGeometry";
+import { buildPlant, type Obstacle, type PlantGeometry } from "@/components/art/plantGeometry";
 
 function readPx(name: string) {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -13,27 +13,31 @@ function readPx(name: string) {
   return value;
 }
 
-function leafAnchors(host: HTMLElement, stemTop: number, height: number) {
-  const width = host.getBoundingClientRect().width;
-  const spots = [...host.querySelectorAll<HTMLElement>(".media-frame")]
-    .map((frame) => {
-      const box = frame.getBoundingClientRect();
-      return { y: box.top - stemTop + Math.min(box.height * 0.42, 140), left: box.left };
-    })
-    .filter((spot) => spot.y > height * 0.12 && spot.y < height * 0.9 && spot.left < width * 0.58)
-    .sort((a, b) => a.y - b.y);
-
-  const picked: number[] = [];
-  for (const spot of spots) {
-    if (picked.every((y) => Math.abs(y - spot.y) > height * 0.14)) picked.push(spot.y);
-    if (picked.length === 3) break;
-  }
-  const fallback = [0.24, 0.5, 0.74].map((t) => t * height);
-  for (const y of fallback) {
-    if (picked.length === 3) break;
-    if (picked.every((spot) => Math.abs(spot - y) > height * 0.12)) picked.push(y);
-  }
-  return picked.sort((a, b) => a - b).slice(0, 3);
+function obstaclesIn(stem: HTMLElement) {
+  const stemBox = stem.getBoundingClientRect();
+  const rel = (el: Element) => {
+    const box = el.getBoundingClientRect();
+    return {
+      x: box.left - stemBox.left,
+      y: box.top - stemBox.top,
+      w: box.width,
+      h: box.height,
+    };
+  };
+  const visible = (el: HTMLElement) => {
+    if (el.closest(".scroll-stem, .plant-anchor, .mobile-cta")) return false;
+    const style = getComputedStyle(el);
+    return style.display !== "none" && style.visibility !== "hidden";
+  };
+  const photos = [...document.querySelectorAll<HTMLElement>(".media-frame, .map-frame")]
+    .filter(visible)
+    .map((el) => ({ ...rel(el), kind: "photo" as const }))
+    .filter((box) => box.w > 8 && box.h > 8);
+  const blocks = [...document.querySelectorAll<HTMLElement>("main h1, main h2, main h3, main p, main li, main blockquote, main figcaption, main a, main button, main article, footer h2, footer p, footer li, footer a")]
+    .filter(visible)
+    .map((el) => ({ ...rel(el), kind: "block" as const }))
+    .filter((box) => box.w > 8 && box.h > 8 && box.y < stemBox.height && box.y + box.h > 0);
+  return { photos, blocks, stemBox };
 }
 
 function PlantPaths({
@@ -51,10 +55,19 @@ function PlantPaths({
         {geo.wings.map((d, index) => (
           <path key={`wing-${index}`} className="plant-wing" d={d} pathLength={1} />
         ))}
+        {geo.join ? <path className="plant-join" d={geo.join} pathLength={1} /> : null}
       </g>
-      <path className="plant-spine" d={geo.spine} pathLength={1} />
-      {geo.leaves.map((d, index) => (
-        <path key={`leaf-${index}`} className={`plant-leaf plant-leaf-${index}`} d={d} pathLength={1} />
+      {geo.segments.map((d, index) => (
+        <path key={`stem-${index}`} className={`plant-stem plant-stem-${index}`} d={d} pathLength={1} />
+      ))}
+      {geo.leaves.map((leaf, index) => (
+        <g key={`leaf-${index}`} className={`plant-leaf-group plant-leaf-${index}`}>
+          <path className="plant-leaf-outline" d={leaf.outline} pathLength={1} />
+          <path className="plant-leaf-midrib" d={leaf.midrib} pathLength={1} />
+          {leaf.veins.map((d, vein) => (
+            <path key={`vein-${vein}`} className={`plant-leaf-vein plant-leaf-vein-${vein}`} d={d} pathLength={1} />
+          ))}
+        </g>
       ))}
     </svg>
   );
@@ -76,22 +89,41 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       const stem = host.querySelector<HTMLElement>(".scroll-stem");
       const anchor = host.querySelector<HTMLElement>(".plant-anchor");
       if (!stem || !anchor) return;
-      const stemBox = stem.getBoundingClientRect();
+      let photos;
+      let blocks;
+      let stemBox;
+      try {
+        ({ photos, blocks, stemBox } = obstaclesIn(stem));
+      } catch (error) {
+        console.error("plant-measure", error);
+        return;
+      }
       const anchorBox = anchor.getBoundingClientRect();
       if (stemBox.width < 2 || stemBox.height < 2 || anchorBox.width < 2) return;
       const gap = Number.parseFloat(getComputedStyle(anchor).marginBottom) || 0;
       const leaf = readPx("--line-leaf");
       const stroke = readPx("--line-stroke-stem");
-      const leafYs = leafAnchors(host, stemBox.top, stemBox.height);
+      const container = host.querySelector<HTMLElement>(".mx-auto");
+      const containerBox = container?.getBoundingClientRect();
+      const pad = container ? Number.parseFloat(getComputedStyle(container).paddingLeft) || 0 : 0;
+      const contentLeft = containerBox ? containerBox.left - stemBox.left + pad : pad;
+      const contentRight = containerBox ? containerBox.right - stemBox.left - pad : stemBox.width - pad;
+      const obstacles: Obstacle[] = [...photos, ...blocks];
+      let checksum = obstacles.length;
+      for (const box of obstacles) {
+        checksum = (checksum + Math.round(box.x) * 3 + Math.round(box.y) * 5 + Math.round(box.w) + Math.round(box.h) * 7) | 0;
+      }
       const nextSignature = [
         stemBox.width.toFixed(0),
         stemBox.height.toFixed(0),
         anchorBox.left.toFixed(0),
         anchorBox.top.toFixed(0),
         anchorBox.width.toFixed(0),
+        contentLeft.toFixed(0),
+        contentRight.toFixed(0),
         leaf.toFixed(0),
         stroke.toFixed(0),
-        leafYs.map((y) => y.toFixed(0)).join("."),
+        String(checksum),
       ].join(":");
       if (nextSignature !== signature.current) {
         signature.current = nextSignature;
@@ -108,7 +140,9 @@ export function ScrollStem({ children }: { children: ReactNode }) {
             gap,
             leaf,
             stroke,
-            leafYs,
+            contentLeft,
+            contentRight,
+            obstacles,
           }),
         );
       }
@@ -129,14 +163,21 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       clip.replaceChildren(next);
     };
 
-    update();
-    const observer = new ResizeObserver(update);
+    let alive = true;
+    const measure = () => {
+      if (alive) update();
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(host);
-    host.querySelectorAll(".page-stem-band").forEach((band) => observer.observe(band));
-    window.addEventListener("resize", update);
+    host.querySelectorAll("section").forEach((section) => observer.observe(section));
+    document.querySelectorAll("footer").forEach((footer) => observer.observe(footer));
+    document.fonts?.ready.then(measure).catch(() => undefined);
+    window.addEventListener("resize", measure);
     return () => {
+      alive = false;
       observer.disconnect();
-      window.removeEventListener("resize", update);
+      window.removeEventListener("resize", measure);
     };
   }, []);
 

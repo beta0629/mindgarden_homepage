@@ -7,12 +7,14 @@ export function LineDraw({
   mode,
   short = false,
   grow = false,
+  leaf = false,
   className,
   children,
 }: {
   mode: "now" | "scroll" | "static";
   short?: boolean;
   grow?: boolean;
+  leaf?: boolean;
   className?: string;
   children: ReactNode;
 }) {
@@ -41,16 +43,24 @@ export function LineDraw({
         node.classList.add("is-drawn");
         observer.disconnect();
       },
-      { threshold: 0.35 },
+      // A page-length stem is never 35% on screen, so the once-only fallback
+      // starts as soon as any of it is visible.
+      { threshold: grow ? 0 : 0.35 },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [mode]);
+  }, [mode, grow]);
 
   return (
     <span
       ref={ref}
-      className={cn("line-draw", short && "line-draw-short", grow && "line-draw-grow", className)}
+      className={cn(
+        "line-draw",
+        short && "line-draw-short",
+        grow && "line-draw-grow",
+        leaf && "line-draw-leaf",
+        className,
+      )}
     >
       {children}
     </span>

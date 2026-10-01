@@ -94,25 +94,38 @@
 
 .scroll-stem .scroll-leaf {
   position: absolute;
-  inset-inline-start: 10%;
   width: var(--line-leaf);
 }
 
-.scroll-leaf-a {
-  inset-block-start: 18%;
+.scroll-leaf-a,
+.scroll-leaf-c {
+  inset-block-start: 22%;
+  inset-inline-start: auto;
+  inset-inline-end: 48%;
 }
 
 .scroll-leaf-b {
-  inset-block-start: 46%;
+  inset-block-start: 48%;
+  inset-inline-start: auto;
+  inset-inline-end: 48%;
+  transform: scaleX(-1);
+  transform-origin: right center;
 }
 
 .scroll-leaf-c {
-  inset-block-start: 72%;
+  inset-block-start: 74%;
 }
 
-.scroll-stem-mirrored .scroll-leaf {
-  transform: scaleX(-1);
-  transform-origin: center;
+.scroll-stem-mirrored .scroll-leaf-a {
+  inset-block-start: 30%;
+}
+
+.scroll-stem-mirrored .scroll-leaf-b {
+  inset-block-start: 56%;
+}
+
+.scroll-stem-mirrored .scroll-leaf-c {
+  inset-block-start: 80%;
 }
 
 /* non-scaling-stroke dashes in host pixels. A unitless 1 finishes while the
@@ -138,6 +151,11 @@ html.motion-ready .line-draw.is-drawn path {
 
 html.motion-ready .line-draw-short.is-drawn path {
   transition-duration: var(--dur-draw-short);
+}
+
+html.motion-ready .line-draw-leaf.is-drawn path {
+  transition-duration: var(--dur-draw-leaf);
+  transition-timing-function: var(--ease-out);
 }
 
 html.motion-ready .line-draw.is-drawn path:nth-child(2) {
@@ -169,8 +187,9 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   }
 }
 
-/* Scroll-linked stem. Leaves stay on the once-only draw below.
-   Browsers without view timelines keep the intersection draw. */
+/* Each section stem grows while that stretch enters the viewport.
+   Leaves stay on the once-only draw. Without view timelines, the
+   intersection observer draws the stem once. */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {
   @media (prefers-reduced-motion: no-preference) {
     html.motion-ready .line-draw-grow path {
@@ -191,7 +210,8 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
 @media (prefers-reduced-motion: reduce) {
   html.motion-ready .line-draw path,
   html.motion-ready .line-draw.is-drawn path,
-  html.motion-ready .line-draw-grow path {
+  html.motion-ready .line-draw-grow path,
+  html.motion-ready .line-draw-leaf path {
     animation: none;
     stroke-dasharray: none;
     stroke-dashoffset: 0;

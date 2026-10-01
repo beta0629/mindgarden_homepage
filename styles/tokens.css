@@ -90,13 +90,13 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 180ms; --dur-base: 280ms; --dur-slow: 600ms;
-  --dur-draw: 3.2s; --dur-draw-short: 2.8s; --draw-stagger: 120ms;
+  --dur-draw: 3.2s; --dur-draw-short: 2.8s; --dur-draw-leaf: 1.35s; --draw-stagger: 120ms;
 
   /* sizes */
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
   --line-butterfly: 12rem;
   --line-stem: 2.75rem;
-  --line-leaf: 2.5rem;
+  --line-leaf: 3rem;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
   --vb-butterfly: 544px;
   --vb-stem: 120px;
@@ -125,6 +125,6 @@
     --header-h: 4rem;
     --line-butterfly: 8rem;
     --line-stem: 1.65rem;
-    --line-leaf: 1.7rem;
+    --line-leaf: 1.35rem;
   }
 }

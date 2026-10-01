@@ -48,8 +48,9 @@ export function LineArt({
   return (
     <LineDraw
       mode={draw}
-      short={part !== "spine" && kind !== "butterfly"}
+      short={part !== "spine" && part !== "leaf" && kind !== "butterfly"}
       grow={part === "spine"}
+      leaf={part === "leaf"}
       className={cn(
         "line-art",
         partClass,

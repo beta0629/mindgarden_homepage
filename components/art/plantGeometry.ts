@@ -4,8 +4,7 @@ export type Obstacle = Box & { kind: "photo" | "block" };
 
 export type PlantGeometry = {
   viewBox: string;
-  join: string;
-  rest: string;
+  line: string;
 };
 
 type Point = { x: number; y: number };
@@ -219,6 +218,28 @@ function wrapBlock(box: Box, from: Point, toward: Point): Point[] {
   return [tr, tl, bl];
 }
 
+/** A wrap that never turns is just a left edge. Force the stroke across the block. */
+function ensureTurn(points: Point[], box: Box): Point[] {
+  if (points.length < 2) return points;
+  let minX = points[0]?.x ?? 0;
+  let maxX = minX;
+  let minY = points[0]?.y ?? 0;
+  let maxY = minY;
+  for (const point of points) {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+  if (maxX - minX > Math.min(96, box.w * 0.55) && maxY - minY > 36) return points;
+  return [
+    { x: box.x, y: box.y },
+    { x: rightOf(box), y: box.y },
+    { x: rightOf(box), y: bottomOf(box) },
+    { x: box.x, y: bottomOf(box) },
+  ];
+}
+
 function route(from: Point, to: Point): Point[] {
   if (gapOf(from, to) < 2) return [];
   if (Math.abs(from.x - to.x) < 2 || Math.abs(from.y - to.y) < 2) return [to];
@@ -236,7 +257,7 @@ function targetsFrom(photos: Box[], blocks: Box[], clusterGap: number, width: nu
     captions.add(block);
   }
   const text = clusterBoxes(blocks.filter((block) => !captions.has(block)), clusterGap).filter((box) => box.w >= 96 && box.h >= 36);
-  const pictures = mergeBands(grownPhotos, 96).filter((box) => box.w >= 64 && box.h >= 64);
+  const pictures = mergeBands(grownPhotos, 48).filter((box) => box.w >= 64 && box.h >= 64);
   const merged = [...pictures, ...text].sort((a, b) => a.y - b.y || a.x - b.x);
   const kept: Box[] = [];
   for (const box of merged) {
@@ -290,7 +311,7 @@ export function buildPlant({
     const toward = next
       ? { x: next.x + next.w / 2, y: next.y + Math.min(next.h * 0.35, 80) }
       : { x: box.x + box.w / 2, y: Math.min(height - 16, bottomOf(box) + 160) };
-    const wrap = wrapBlock(box, cursor, toward);
+    const wrap = ensureTurn(wrapBlock(box, cursor, toward), box);
     const first = wrap[0];
     if (!first) return;
     for (const point of route(cursor, first)) tail.push(point);
@@ -301,11 +322,8 @@ export function buildPlant({
   const tailEnd = Math.min(height - 10, cursor.y + Math.max(120, bend * 2));
   if (tailEnd > cursor.y + 24) tail.push({ x: cursor.x, y: tailEnd });
 
-  const head = simplify([origin, stub]);
-  const restPoints = simplify(tail);
   return {
     viewBox,
-    join: roundedPolyline(head, radius),
-    rest: roundedPolyline(restPoints, Math.max(16, radius)),
+    line: roundedPolyline(simplify([origin, ...tail]), Math.max(16, radius)),
   };
 }

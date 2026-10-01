@@ -75,6 +75,29 @@
   z-index: 2;
 }
 
+.plant-anchor-slot {
+  width: var(--line-butterfly);
+  aspect-ratio: 544 / 408;
+}
+
+.creature path {
+  stroke-width: var(--line-stroke-wrap);
+  vector-effect: non-scaling-stroke;
+}
+
+/* Scroll 0 paints the caterpillar only. Later stages stay unpainted until their range. */
+.stage-caterpillar,
+.stage-chrysalis,
+.stage-butterfly-partial {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.stage-butterfly-open {
+  opacity: 1;
+  visibility: visible;
+}
+
 .scroll-stem-host {
   position: relative;
   isolation: isolate;
@@ -302,41 +325,154 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   }
 }
 
-/* One line. pathLength is 1, so a dash of 1 is the whole continuation.
-   At scroll 0 only the short opening stroke is painted. Scroll reveals the wrap.
-   The viewBox matches CSS pixels, so the stroke token is the on-screen width. */
+/* One line. pathLength is 1, so a dash of 1 is the whole wrap.
+   At scroll 0 the stroke is unpainted. It starts after the chrysalis and finishes
+   before the bottom, so the open butterfly sits on a completed wrap. */
 @keyframes wrap-draw {
-  from {
+  0% {
     stroke-dashoffset: 1;
   }
-  to {
+  22% {
+    stroke-dashoffset: 0.42;
+  }
+  100% {
     stroke-dashoffset: 0;
   }
 }
 
-html.motion-ready .wrap-line-rest {
+@keyframes caterpillar-life {
+  0%,
+  62% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes chrysalis-life {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+  }
+  18%,
+  74% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes butterfly-partial-life {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+  }
+  16%,
+  78% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes butterfly-open-life {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+  }
+  28%,
+  100% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+html.motion-ready .stage-caterpillar {
+  opacity: 1;
+  visibility: visible;
+}
+
+html.motion-ready .stage-chrysalis,
+html.motion-ready .stage-butterfly-partial,
+html.motion-ready .stage-butterfly-open {
+  opacity: 0;
+  visibility: hidden;
+}
+
+html.motion-ready .wrap-line {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
-    html.motion-ready .wrap-line-rest {
+    html.motion-ready .stage-caterpillar {
+      animation-name: caterpillar-life;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 72vh;
+    }
+
+    html.motion-ready .stage-chrysalis {
+      animation-name: chrysalis-life;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 62vh 148vh;
+    }
+
+    html.motion-ready .stage-butterfly-partial {
+      animation-name: butterfly-partial-life;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 165vh 310vh;
+    }
+
+    html.motion-ready .stage-butterfly-open {
+      animation-name: butterfly-open-life;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 58% 78%;
+    }
+
+    html.motion-ready .wrap-line {
       animation-name: wrap-draw;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
-      animation-range: 0% 65%;
+      animation-range: 15% 92%;
     }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html.motion-ready .wrap-line,
-  html.motion-ready .wrap-line-rest,
   .wrap-line,
-  .wrap-line-rest,
+  html.motion-ready .stage-caterpillar,
+  html.motion-ready .stage-chrysalis,
+  html.motion-ready .stage-butterfly-partial,
+  html.motion-ready .stage-butterfly-open,
+  .stage-caterpillar,
+  .stage-chrysalis,
+  .stage-butterfly-partial,
+  .stage-butterfly-open,
   .plant-wing,
   .plant-join,
   .plant-spine,
@@ -345,8 +481,28 @@ html.motion-ready .wrap-line-rest {
   .plant-leaf-midrib,
   .plant-leaf-vein {
     animation: none;
+    transition: none;
+  }
+
+  html.motion-ready .wrap-line,
+  .wrap-line {
     stroke-dasharray: none;
     stroke-dashoffset: 0;
-    transition: none;
+  }
+
+  html.motion-ready .stage-caterpillar,
+  html.motion-ready .stage-chrysalis,
+  html.motion-ready .stage-butterfly-partial,
+  .stage-caterpillar,
+  .stage-chrysalis,
+  .stage-butterfly-partial {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  html.motion-ready .stage-butterfly-open,
+  .stage-butterfly-open {
+    opacity: 1;
+    visibility: visible;
   }
 }

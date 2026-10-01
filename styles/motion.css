@@ -69,23 +69,33 @@
   height: 100%;
 }
 
+.plant-anchor {
+  display: block;
+}
+
 .scroll-stem-host {
   position: relative;
 }
 
-.scroll-stem {
-  position: absolute;
-  top: var(--page-stem-start);
-  bottom: calc(-1 * var(--page-stem-footer));
-  inset-inline-start: max(var(--space-1), calc((100% - var(--container)) / 2));
-  width: var(--line-stem);
-  pointer-events: none;
-  z-index: 1;
+/* Text and controls stay above the plant. Photos stay underneath so a leaf can sit beside them. */
+.scroll-stem-host :is(h1, h2, h3, p, li, blockquote, figcaption),
+.scroll-stem-host a:not(:has(img)) {
+  position: relative;
+  z-index: 2;
 }
 
-.scroll-stem .line-draw {
-  display: block;
-  width: 100%;
+html.motion-ready .plant-anchor,
+.scroll-stem-host.is-planted .plant-anchor {
+  visibility: hidden;
+}
+
+.scroll-stem {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  bottom: calc(-1 * var(--page-stem-footer));
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Same path, shown only across deep bands in the on-dark green. */
@@ -102,52 +112,34 @@
   height: 0;
 }
 
-.scroll-stem-line,
-.scroll-stem-line svg {
-  height: 100%;
-}
-
-.scroll-stem .scroll-leaf {
+.plant-svg {
   position: absolute;
-  width: var(--line-leaf);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: var(--color-draw);
 }
 
-.scroll-leaf-a,
-.scroll-leaf-c {
-  inset-block-start: 22%;
-  inset-inline-start: auto;
-  inset-inline-end: 48%;
+.plant-on-dark {
+  color: var(--color-draw-on-dark);
 }
 
-.scroll-leaf-b {
-  inset-block-start: 48%;
-  inset-inline-start: auto;
-  inset-inline-end: 48%;
-  transform: scaleX(-1);
-  transform-origin: right center;
+.plant-svg path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: none;
 }
 
-.scroll-leaf-c {
-  inset-block-start: 74%;
+.plant-wing {
+  stroke-width: var(--line-stroke-wing);
 }
 
-.scroll-stem-mirrored .scroll-leaf-a {
-  inset-block-start: 30%;
-}
-
-.scroll-stem-mirrored .scroll-leaf-b {
-  inset-block-start: 56%;
-}
-
-.scroll-stem-mirrored .scroll-leaf-c {
-  inset-block-start: 80%;
-}
-
-@media (max-width: 640px) {
-  .scroll-stem .scroll-leaf {
-    inset-inline-end: auto;
-    inset-inline-start: 0;
-  }
+.plant-spine,
+.plant-leaf {
+  stroke-width: var(--line-stroke-stem);
 }
 
 /* non-scaling-stroke dashes in host pixels. A unitless 1 finishes while the
@@ -262,7 +254,87 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   html.motion-ready .line-draw path,
   html.motion-ready .line-draw.is-drawn path,
   html.motion-ready .line-draw-grow path,
-  html.motion-ready .line-draw-leaf path {
+  html.motion-ready .line-draw-leaf path,
+  .plant-wing,
+  .plant-spine,
+  .plant-leaf {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
+
+/* Plant dashes are pathLength units, so 1 is the whole stroke and 0 is the finished mark.
+   No non-scaling stroke: the viewBox matches CSS pixels, and the token is the on-screen width. */
+html.motion-ready .plant-wing,
+html.motion-ready .plant-spine,
+html.motion-ready .plant-leaf {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+html.motion-ready .plant-wings.is-drawn .plant-wing {
+  stroke-dashoffset: 0;
+  transition-property: stroke-dashoffset;
+  transition-duration: var(--dur-draw);
+  transition-timing-function: var(--ease-draw);
+}
+
+@keyframes plant-stem-grow {
+  from {
+    stroke-dashoffset: var(--stem-shown-start);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes plant-leaf-grow {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .plant-spine {
+      animation-name: plant-stem-grow;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+    }
+
+    html.motion-ready .plant-leaf {
+      animation-name: plant-leaf-grow;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+    }
+
+    html.motion-ready .plant-leaf-0 {
+      animation-range: 12% 24%;
+    }
+
+    html.motion-ready .plant-leaf-1 {
+      animation-range: 38% 50%;
+    }
+
+    html.motion-ready .plant-leaf-2 {
+      animation-range: 64% 78%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-wing,
+  .plant-spine,
+  .plant-leaf {
     animation: none;
     stroke-dasharray: none;
     stroke-dashoffset: 0;

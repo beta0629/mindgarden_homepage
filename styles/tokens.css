@@ -94,14 +94,16 @@
 
   /* sizes */
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
-  --line-butterfly: 12rem;
+  --line-butterfly: 18rem;
   --line-stem: 2.75rem;
-  --line-leaf: 3rem;
-  /* Stem starts under the hero butterfly and runs into the footer. */
-  --page-stem-start: calc(var(--space-6) + var(--line-butterfly) * 0.75 + var(--space-5));
-  --page-stem-footer: var(--space-20);
-  /* Share of the dash still hidden at scroll 0, so the first screen shows the start. */
-  --stem-shown-start: 0.88;
+  --line-leaf: 6.75rem;
+  /* The plant overlay runs the full page and continues into the footer. */
+  --page-stem-footer: 34rem;
+  /* Share of the stem dash still hidden at scroll 0, so the first screen shows the start. */
+  --stem-shown-start: 0.84;
+  /* On-screen stroke. The plant viewBox is 1 CSS pixel per user unit. */
+  --line-stroke-stem: 15px;
+  --line-stroke-wing: 3.5px;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
   --vb-butterfly: 544px;
   --vb-stem: 120px;
@@ -112,7 +114,6 @@
   --vb-leaf: 48px;
   --line-stroke: 2.4;
   --line-stroke-thin: 1.75;
-  --line-stroke-stem: 3;
   --line-final: 22rem;
   --z-header: 40; --z-bar: 50;
   --color-on-primary: #FFFFFF;
@@ -128,13 +129,10 @@
     --tracking-display: -0.03em;
     --leading-display: 1.24;
     --header-h: 4rem;
-    --line-butterfly: 8rem;
+    --line-butterfly: 12.5rem;
     --line-stem: 1.65rem;
-    --line-leaf: 1.35rem;
-  }
-}
-@media (min-width: 1024px) {
-  :root {
-    --page-stem-start: calc(var(--space-20) + var(--line-butterfly) * 0.75 + var(--space-8));
+    --line-leaf: 4.75rem;
+    --line-stroke-stem: 10px;
+    --line-stroke-wing: 3px;
   }
 }

@@ -31,7 +31,7 @@ export function Hero({
     <section className="pt-6 pb-10 lg:pt-20 lg:pb-24">
       <Container className="grid items-center gap-6 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col">
-          <LineArt kind="butterfly" draw="now" className="mb-5 w-butterfly lg:mb-8" />
+          <LineArt kind="butterfly" draw="now" className="plant-anchor mb-5 w-butterfly lg:mb-8" />
           <p className="type-eyebrow">{eyebrow}</p>
           <h1 className="type-display mt-4 lg:mt-6">
             {titleLines.map((line) => (

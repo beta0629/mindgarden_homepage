@@ -2,37 +2,43 @@ export type Box = { x: number; y: number; w: number; h: number };
 
 export type PlantGeometry = {
   viewBox: string;
-  line: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  radius: number;
 };
 
 function round(n: number) {
   return Math.round(n * 10) / 10;
 }
 
-function rightOf(box: Box) {
-  return box.x + box.w;
-}
-
-/** One horizontal stroke above the stat cells. It does not turn down a side. */
+/**
+ * One rounded frame around the programs text block.
+ * The box is the copy only, so the stroke does not enclose photos
+ * and does not continue down the page.
+ */
 export function buildPlant({
   width,
   height,
-  cells,
-  gap,
+  text,
+  pad,
+  radius,
 }: {
   width: number;
   height: number;
-  cells: Box[];
-  gap: number;
+  text: Box | null;
+  pad: number;
+  radius: number;
 }): PlantGeometry {
   const viewBox = `0 0 ${round(width)} ${round(height)}`;
-  if (cells.length < 2 || width < 2 || height < 2) return { viewBox, line: "" };
-  const left = Math.min(...cells.map((box) => box.x));
-  const right = Math.max(...cells.map((box) => rightOf(box)));
-  const y = Math.min(...cells.map((box) => box.y)) - Math.max(0, gap);
-  if (right - left < 48 || y < 0 || y > height) return { viewBox, line: "" };
-  return {
-    viewBox,
-    line: `M${round(left)} ${round(y)}L${round(right)} ${round(y)}`,
-  };
+  const empty = { viewBox, x: 0, y: 0, w: 0, h: 0, radius: 0 };
+  if (!text || width < 2 || height < 2) return empty;
+  const x = text.x - pad;
+  const y = text.y - pad;
+  const w = text.w + pad * 2;
+  const h = text.h + pad * 2;
+  if (w < 64 || h < 48 || x < 0 || y < 0 || x + w > width + 1 || y + h > height + 1) return empty;
+  const corner = Math.min(Math.max(0, radius), w / 2, h / 2);
+  return { viewBox, x: round(x), y: round(y), w: round(w), h: round(h), radius: round(corner) };
 }

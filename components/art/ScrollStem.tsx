@@ -89,20 +89,13 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       const stem = host.querySelector<HTMLElement>(".scroll-stem");
       const anchor = host.querySelector<HTMLElement>(".plant-anchor");
       if (!stem || !anchor) return;
-      let photos;
-      let blocks;
-      let stemBox;
-      try {
-        ({ photos, blocks, stemBox } = obstaclesIn(stem));
-      } catch (error) {
-        console.error("plant-measure", error);
-        return;
-      }
+      const { photos, blocks, stemBox } = obstaclesIn(stem);
       const anchorBox = anchor.getBoundingClientRect();
       if (stemBox.width < 2 || stemBox.height < 2 || anchorBox.width < 2) return;
       const gap = Number.parseFloat(getComputedStyle(anchor).marginBottom) || 0;
       const leaf = readPx("--line-leaf");
       const stroke = readPx("--line-stroke-stem");
+      const bend = readPx("--line-bend");
       const container = host.querySelector<HTMLElement>(".mx-auto");
       const containerBox = container?.getBoundingClientRect();
       const pad = container ? Number.parseFloat(getComputedStyle(container).paddingLeft) || 0 : 0;
@@ -123,6 +116,7 @@ export function ScrollStem({ children }: { children: ReactNode }) {
         contentRight.toFixed(0),
         leaf.toFixed(0),
         stroke.toFixed(0),
+        bend.toFixed(0),
         String(checksum),
       ].join(":");
       if (nextSignature !== signature.current) {
@@ -140,6 +134,7 @@ export function ScrollStem({ children }: { children: ReactNode }) {
             gap,
             leaf,
             stroke,
+            bend,
             contentLeft,
             contentRight,
             obstacles,

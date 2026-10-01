@@ -416,6 +416,7 @@ function routeStem({
   anchor,
   gap,
   stroke,
+  bend,
   width,
   height,
   contentLeft,
@@ -427,6 +428,7 @@ function routeStem({
   anchor: Box;
   gap: number;
   stroke: number;
+  bend: number;
   width: number;
   height: number;
   contentLeft: number;
@@ -435,6 +437,10 @@ function routeStem({
   blocks: Box[];
   pads: Box[];
 }) {
+  const rows = clusterRows(photos).map((row) => ({
+    ...row,
+    portals: portalsFor(row, blocks, contentLeft, contentRight, width, stroke),
+  }));
   const tail = bottomOf(anchor);
   const joinX = anchor.x + anchor.w * 0.5;
   const joinY = tail - Math.min(8, stroke * 0.35);
@@ -443,74 +449,63 @@ function routeStem({
     [joinX, joinY],
     [joinX, dropY],
   ];
-  const rows = clusterRows(photos);
   const used: Portal[] = [];
   let x = joinX;
   let y = dropY;
+  let lastBow = -1000;
   const endY = Math.max(dropY + 8, height - stroke);
-  let guard = 0;
+  const step = 48;
 
-  while (y < endY - 1 && guard < 900) {
-    guard += 1;
-    const row = rows.find((item) => item.y1 > y + 12);
-    const portals = row ? portalsFor(row, blocks, contentLeft, contentRight, width, stroke) : [];
-    const portal = portals.length ? pickPortal(portals, x, contentLeft, contentRight, pads) : null;
-    if (portal && Math.abs(portal.x - x) > 8) {
-      const limit = y < portal.y0 ? portal.y0 - 2 : y;
-      const slid = slideX(x, portal.x, y, Math.max(y, limit), pads);
-      if (slid) {
-        points.push(...slid.points);
-        x = portal.x;
-        y = slid.y;
-      }
+  while (y < endY - 1) {
+    const yNext = Math.min(endY, y + step);
+    const row = rows.find((item) => item.y1 > y + 8 && item.y0 < yNext + 360);
+    const portal = row && row.portals.length ? pickPortal(row.portals, x, contentLeft, contentRight, pads) : null;
+    const approaching = Boolean(portal && row && y < row.y0 && row.y0 - y < 360);
+    const beside = Boolean(portal && row && yNext >= row.y0 && y <= row.y1);
+    const want = portal && (approaching || beside) ? portal.x : x;
+
+    if (Math.abs(want - x) > 8 && !blocked(x, y, want, y, pads)) {
+      points.push([want, y]);
+      x = want;
     }
 
-    const yGoal = portal ? (y < portal.y0 ? portal.y0 : Math.min(endY, portal.y1)) : Math.min(endY, y + 220);
-    const yNext = Math.min(endY, Math.max(y + 16, yGoal));
+    if (portal && Math.abs(x - portal.x) < 14 && y >= portal.y0 - 20 && y <= portal.y1 && !used.includes(portal)) {
+      used.push(portal);
+    }
+
     if (!blocked(x, y, x, yNext, pads)) {
       const outside = x < contentLeft || x > contentRight;
-      const approach = portal ? portal.y0 - y : yNext - y;
-      if (outside && approach > 200) {
-        const reach = Math.min(96, (contentRight - contentLeft) * 0.28);
+      const upcoming = rows.find((item) => item.y0 > y + 140);
+      if (outside && upcoming && upcoming.y0 - y > 220 && y - lastBow > 420) {
+        const reach = Math.min(bend, (contentRight - contentLeft) * 0.34);
         const inward = x > contentRight ? contentRight - reach : contentLeft + reach;
-        const mid = y + approach * 0.42;
-        const back = y + approach * 0.78;
+        const mid = y + Math.min(90, (upcoming.y0 - y) * 0.34);
+        const back = y + Math.min(170, (upcoming.y0 - y) * 0.68);
         if (
           inward > stroke &&
           inward < width - stroke &&
-          back > mid + 20 &&
-          back < yNext &&
+          back > mid + 24 &&
+          back < upcoming.y0 - 8 &&
           !blocked(x, mid, inward, mid, pads) &&
           !blocked(inward, mid, inward, back, pads) &&
           !blocked(inward, back, x, back, pads)
         ) {
-          points.push([x, mid], [inward, mid], [inward, back], [x, back], [x, yNext]);
-          y = yNext;
-          if (portal && y >= portal.y1 - 4 && !used.includes(portal)) used.push(portal);
-          continue;
+          points.push([x, mid], [inward, mid], [inward, back], [x, back]);
+          lastBow = y;
         }
       }
       y = yNext;
       points.push([x, y]);
-      if (portal && y >= portal.y1 - 4 && !used.includes(portal)) used.push(portal);
       continue;
     }
 
-    const yMark = y;
-    const hit = firstHitY(x, y, yNext, pads);
-    const prefer = portal?.x ?? x;
-    const escape = escapeX(x, Math.max(y, hit - 2), pads, contentLeft, contentRight, width, stroke, prefer);
-    const slid = slideX(x, escape, y, Math.max(y, hit - 4), pads);
-    const nextX = slid?.points[slid.points.length - 1]?.[0];
-    if (slid && nextX != null && Math.abs(nextX - x) > 1) {
-      points.push(...slid.points);
-      x = nextX;
-      y = slid.y;
+    const escape = escapeX(x, y, pads, contentLeft, contentRight, width, stroke, want);
+    if (Math.abs(escape - x) > 1 && !blocked(x, y, escape, y, pads)) {
+      points.push([escape, y]);
+      x = escape;
     }
-    if (y <= yMark) {
-      y = Math.min(endY, yMark + 20);
-      points.push([x, y]);
-    }
+    y = yNext;
+    points.push([x, y]);
   }
 
   if ((points[points.length - 1]?.[1] ?? 0) < endY) points.push([x, endY]);
@@ -530,26 +525,50 @@ function leafOutline(cx: number, baseY: number, length: number, width: number) {
   ].join("");
 }
 
-function leafBox(cx: number, baseY: number, length: number, width: number): Box {
-  return { x: cx - width / 2, y: baseY - length, w: width, h: length };
-}
-
 function leafParts(cx: number, baseY: number, length: number, width: number): PlantLeaf {
   const hw = width / 2;
   const tipY = baseY - length;
   const midrib = [
     `M${round(cx)} ${round(baseY)}`,
-    `C${round(cx + hw * 0.1)} ${round(baseY - length * 0.32)} ${round(cx - hw * 0.05)} ${round(baseY - length * 0.66)} ${round(cx)} ${round(tipY)}`,
+    `C${round(cx + hw * 0.08)} ${round(baseY - length * 0.34)} ${round(cx - hw * 0.04)} ${round(baseY - length * 0.68)} ${round(cx)} ${round(tipY)}`,
   ].join("");
-  const veins = [0.36, 0.5, 0.64, 0.78].map((t, index) => {
+  const veins = [0.38, 0.52, 0.66, 0.8].map((t, index) => {
     const side = index % 2 === 0 ? 1 : -1;
     const y = baseY - length * t;
-    const reach = hw * Math.sin(Math.PI * t) * 0.78;
+    const reach = hw * Math.sin(Math.PI * t) * 0.72;
     const ex = cx + side * reach;
-    const ey = y - length * 0.02;
-    return `M${round(cx)} ${round(y)}C${round(cx + side * reach * 0.34)} ${round(y - length * 0.05)} ${round(cx + side * reach * 0.7)} ${round(y + length * 0.01)} ${round(ex)} ${round(ey)}`;
+    return `M${round(cx)} ${round(y)}C${round(cx + side * reach * 0.35)} ${round(y - length * 0.04)} ${round(cx + side * reach * 0.72)} ${round(y + length * 0.01)} ${round(ex)} ${round(y - length * 0.015)}`;
   });
   return { outline: leafOutline(cx, baseY, length, width), midrib, veins };
+}
+
+function placeLeaves(
+  portals: Portal[],
+  points: Point[],
+  obstacles: Obstacle[],
+  leaf: number,
+  stroke: number,
+  height: number,
+) {
+  const spots: { y: number; leaf: PlantLeaf }[] = [];
+  const ordered = [...portals].sort((a, b) => a.y0 - b.y0);
+  for (const portal of ordered) {
+    if (spots.length === 3) break;
+    const room = portal.gap - stroke - 8;
+    if (room < 36 || portal.y1 - portal.y0 < 72) continue;
+    const width = Math.min(leaf * 0.78, room);
+    const length = Math.min(leaf, (portal.y1 - portal.y0) * 0.55);
+    if (width < 36 || length < 48) continue;
+    const baseY = Math.min(portal.y1 - 6, portal.y0 + length + (portal.y1 - portal.y0) * 0.12);
+    const box = inflate({ x: portal.x - width / 2, y: baseY - length, w: width, h: length }, stroke / 2);
+    if (box.y < 0 || bottomOf(box) > height) continue;
+    if (obstacles.some((obstacle) => intersects(box, obstacle))) continue;
+    if (spots.some((spot) => Math.abs(spot.y - baseY) < height * 0.14)) continue;
+    const onStem = points.some((point) => Math.abs(point[0] - portal.x) < 22 && Math.abs(point[1] - baseY) < 80);
+    if (!onStem) continue;
+    spots.push({ y: baseY, leaf: leafParts(portal.x, baseY, length, width) });
+  }
+  return spots;
 }
 
 function pointAtY(points: Point[], y: number) {
@@ -611,53 +630,32 @@ function splitAt(points: Point[], cuts: number[]) {
   return segments;
 }
 
-type PlacedLeaf = PlantLeaf & { baseY: number };
-
-function placeLeaves(portals: Portal[], photos: Box[], points: Point[], leaf: number, stroke: number, height: number, pageWidth: number) {
-  const yStart = points[0]?.[1] ?? 0;
-  const yEnd = points[points.length - 1]?.[1] ?? height;
-  const span = Math.max(1, yEnd - yStart);
-  const anchors = portals
-    .filter((portal) => portal.kind === "between" || portal.gap > stroke)
-    .map((portal) => portal.y0 + Math.min(leaf * 0.2, Math.max(0, portal.y1 - portal.y0) * 0.15));
-  const targets = [0.16, 0.4, 0.8].map((t) => yStart + span * t);
-  const seeds = [...anchors, ...targets].filter((y) => y > yStart + 24 && y < yEnd - 16);
-  const picked: PlacedLeaf[] = [];
-
-  const consider = (y: number) => {
-    if (picked.some((spot) => Math.abs(spot.baseY - y) < span * 0.14)) return;
-    let best: PlacedLeaf | null = null;
-    let bestScore = Infinity;
-    for (let delta = -240; delta <= 160; delta += 24) {
-      const sampleY = y + delta;
-      if (sampleY <= yStart + 16 || sampleY >= yEnd - 8) continue;
-      const stem = pointAtY(points, sampleY);
-      const available = Math.min(stem[0], pageWidth - stem[0]) * 2 - stroke;
-      const leafWidth = Math.min(leaf * 0.9, available);
-      if (leafWidth < leaf * 0.62) continue;
-      const box = leafBox(stem[0], stem[1], leaf, leafWidth);
-      const visual = inflate(box, stroke / 2);
-      if (visual.y < 0) continue;
-      const hitsPhoto = photos.some((photo) => intersects(visual, photo));
-      let beside = 480;
-      for (const photo of photos) {
-        beside = Math.min(beside, Math.min(Math.abs(photo.y - stem[1]), Math.abs(bottomOf(photo) - stem[1])));
-      }
-      const score = (hitsPhoto ? 8000 : 0) + Math.abs(delta) * 0.6 + beside * 0.2;
-      if (score < bestScore) {
-        bestScore = score;
-        best = { baseY: stem[1], ...leafParts(stem[0], stem[1], leaf, leafWidth) };
-      }
-    }
-    if (best && bestScore < 8000) picked.push(best);
-  };
-
-  for (const seed of seeds) {
-    if (picked.length === 3) break;
-    consider(seed);
+function extraLeaves(
+  points: Point[],
+  photos: Box[],
+  leaf: number,
+  stroke: number,
+  pageWidth: number,
+  taken: number[],
+) {
+  const first = points[0];
+  const last = points[points.length - 1];
+  if (!first || !last) return [] as { y: number; leaf: PlantLeaf }[];
+  const span = Math.max(1, last[1] - first[1]);
+  const added: { y: number; leaf: PlantLeaf }[] = [];
+  for (const t of [0.18, 0.42, 0.8]) {
+    if (taken.length + added.length >= 3) break;
+    const y = first[1] + span * t;
+    if (taken.some((spot) => Math.abs(spot - y) < span * 0.14)) continue;
+    const stem = pointAtY(points, y);
+    const available = Math.min(stem[0], pageWidth - stem[0]) * 2 - stroke;
+    const width = Math.min(leaf * 0.9, available);
+    if (width < leaf * 0.62) continue;
+    const box = inflate({ x: stem[0] - width / 2, y: stem[1] - leaf, w: width, h: leaf }, 2);
+    if (photos.some((photo) => intersects(box, photo))) continue;
+    added.push({ y: stem[1], leaf: leafParts(stem[0], stem[1], leaf, width) });
   }
-  picked.sort((a, b) => a.baseY - b.baseY);
-  return picked.slice(0, 3);
+  return added;
 }
 
 export function buildPlant({
@@ -667,6 +665,7 @@ export function buildPlant({
   gap,
   leaf,
   stroke,
+  bend,
   contentLeft,
   contentRight,
   obstacles,
@@ -677,6 +676,7 @@ export function buildPlant({
   gap: number;
   leaf: number;
   stroke: number;
+  bend: number;
   contentLeft: number;
   contentRight: number;
   obstacles: Obstacle[];
@@ -688,16 +688,15 @@ export function buildPlant({
   const wings = butterfly.paths.map((d) => placePath(d, map));
   const photos = obstacles.filter((obstacle) => obstacle.kind === "photo");
   const blocks = obstacles.filter((obstacle) => obstacle.kind === "block");
-  const photoPad = stroke * 0.46;
-  const blockPad = stroke / 2 + 4;
   const pads = [
-    ...photos.map((photo) => inflate(photo, photoPad)),
-    ...blocks.map((block) => inflate(block, blockPad)),
+    ...photos.map((photo) => inflate(photo, stroke * 0.46)),
+    ...blocks.map((block) => inflate(block, stroke / 2 + 4)),
   ];
   const routed = routeStem({
     anchor,
     gap,
     stroke,
+    bend,
     width,
     height,
     contentLeft,
@@ -706,14 +705,17 @@ export function buildPlant({
     blocks,
     pads,
   });
-  const joined = takeJoin(routed.points, Math.min(120, Math.max(84, leaf * 0.8)));
-  const leafSpots = placeLeaves(routed.portals, photos, joined.rest, leaf, stroke, height, width);
   const minX = stroke;
   const maxX = Math.max(minX, width - stroke);
+  const joined = takeJoin(routed.points, Math.min(120, Math.max(84, leaf * 0.75)));
+  const leafSpots = placeLeaves(routed.portals, routed.points, obstacles, leaf, stroke, height);
+  const leaves = [...leafSpots, ...extraLeaves(joined.rest, photos, leaf, stroke, width, leafSpots.map((spot) => spot.y))]
+    .sort((a, b) => a.y - b.y)
+    .slice(0, 3);
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
   const segments = splitAt(
     joined.rest,
-    leafSpots.map((spot) => spot.baseY),
+    leaves.map((spot) => spot.y),
   )
     .map((segment) => curve(segment))
     .filter((d) => d.length > 0);
@@ -723,6 +725,7 @@ export function buildPlant({
     wings,
     join: curve(joined.join),
     segments: segments.length > 0 ? segments : [curve(joined.rest)].filter((d) => d.length > 0),
-    leaves: leafSpots.map((spot) => ({ outline: spot.outline, midrib: spot.midrib, veins: spot.veins })),
+    leaves: leaves.map((spot) => spot.leaf),
   };
 }
+

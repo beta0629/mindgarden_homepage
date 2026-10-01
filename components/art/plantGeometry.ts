@@ -534,7 +534,7 @@ function leafOutline(cx: number, baseY: number, length: number, width: number, l
   ].join("");
 }
 
-function leafParts(cx: number, baseY: number, length: number, width: number, lean: number, home = false): PlantLeaf {
+function leafParts(cx: number, baseY: number, length: number, width: number, lean: number): PlantLeaf {
   const tipX = cx + width * 0.22 * lean;
   const tipY = baseY - length;
   const midrib = [
@@ -548,7 +548,7 @@ function leafParts(cx: number, baseY: number, length: number, width: number, lea
     const ex = cx + side * reach + width * 0.08 * lean;
     return `M${round(cx + width * 0.04 * lean)} ${round(y)}C${round(cx + side * reach * 0.45)} ${round(y - length * 0.03)} ${round(ex)} ${round(y + length * 0.01)} ${round(ex)} ${round(y - length * 0.02)}`;
   });
-  return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins, home };
+  return { outline: leafOutline(cx, baseY, length, width, lean), midrib, veins, home: false };
 }
 
 type LeafTarget = { y: number; scale: number; lean: number; reach: number };
@@ -678,23 +678,6 @@ function pointAtY(points: Point[], y: number) {
   return best;
 }
 
-function heroSprig(points: Point[], anchor: Box, leaf: number, pageWidth: number) {
-  const joinX = anchor.x + anchor.w * 0.5;
-  const joinY = anchor.y + anchor.h - 6;
-  const sign = joinX < pageWidth * 0.5 ? 1 : -1;
-  const leans = [sign * 0.95, sign * 0.2, sign * -0.75];
-  return [0.05, 0.42, 0.78].map((t, index) => {
-    const y = joinY + leaf * 0.7 * t;
-    const stem = pointAtY(points, y);
-    const length = Math.min(140, Math.max(72, leaf * (0.94 + index * 0.03)));
-    const width = Math.min(96, Math.max(52, leaf * 0.64));
-    const lean = leans[index] ?? sign;
-    const half = width / 2;
-    const cx = Math.min(pageWidth - half - 18, Math.max(half + 18, stem[0]));
-    return { y: stem[1], leaf: leafParts(cx, stem[1], length, width, lean, true) };
-  });
-}
-
 function takeJoin(points: Point[], length: number) {
   const first = points[0];
   if (!first || points.length < 2) return { join: points, rest: points };
@@ -770,11 +753,9 @@ export function buildPlant({
   const joined = takeJoin(calmed, Math.max(240, leaf * 1.8));
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
   const spine = curve(joined.rest);
-  const hero = heroSprig(calmed, anchor, leaf, width);
-  const lower = spreadLeaves(joined.rest, obstacles, leaf, width, height).filter(
-    (spot) => spot.y > anchor.y + anchor.h + leaf * 0.35,
+  const leaves = spreadLeaves(joined.rest, obstacles, leaf, width, height).filter(
+    (spot) => spot.y > anchor.y + anchor.h + leaf,
   );
-  const leaves = [...hero, ...lower];
 
   return {
     viewBox: `0 0 ${round(width)} ${round(height)}`,

@@ -90,19 +90,24 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 180ms; --dur-base: 280ms; --dur-slow: 600ms;
-  --dur-draw: 3.4s; --dur-draw-short: 2.8s; --draw-stagger: 120ms;
+  --dur-draw: 3.2s; --dur-draw-short: 2.8s; --draw-stagger: 120ms;
 
   /* sizes */
   --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
-  --line-butterfly: 4.5rem;
-  --line-stem: 2rem;
+  --line-butterfly: 12rem;
+  --line-stem: 2.75rem;
+  --line-leaf: 2.5rem;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
   --vb-butterfly: 544px;
   --vb-stem: 120px;
   --vb-sprig: 240px;
   --vb-vine: 1200px;
-  --line-stroke: 1.4;
-  --line-stroke-thin: 1;
+  --vb-spine: 80px;
+  --vb-spine-h: 240px;
+  --vb-leaf: 48px;
+  --line-stroke: 2.4;
+  --line-stroke-thin: 1.75;
+  --line-stroke-stem: 3;
   --line-final: 22rem;
   --z-header: 40; --z-bar: 50;
   --color-on-primary: #FFFFFF;
@@ -118,7 +123,8 @@
     --tracking-display: -0.03em;
     --leading-display: 1.24;
     --header-h: 4rem;
-    --line-butterfly: 3.5rem;
-    --line-stem: 1.75rem;
+    --line-butterfly: 8rem;
+    --line-stem: 1.65rem;
+    --line-leaf: 1.7rem;
   }
 }

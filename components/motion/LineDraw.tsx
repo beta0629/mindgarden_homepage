@@ -6,11 +6,13 @@ import { cn } from "@/lib/utils";
 export function LineDraw({
   mode,
   short = false,
+  grow = false,
   className,
   children,
 }: {
   mode: "now" | "scroll" | "static";
   short?: boolean;
+  grow?: boolean;
   className?: string;
   children: ReactNode;
 }) {
@@ -46,7 +48,10 @@ export function LineDraw({
   }, [mode]);
 
   return (
-    <span ref={ref} className={cn("line-draw", short && "line-draw-short", className)}>
+    <span
+      ref={ref}
+      className={cn("line-draw", short && "line-draw-short", grow && "line-draw-grow", className)}
+    >
       {children}
     </span>
   );

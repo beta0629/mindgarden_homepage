@@ -20,6 +20,17 @@
   --vb-w: var(--vb-vine);
 }
 
+.line-art-spine {
+  --vb-w: var(--vb-spine);
+  --vb-h: var(--vb-spine-h);
+  container-type: size;
+  height: 100%;
+}
+
+.line-art-leaf {
+  --vb-w: var(--vb-leaf);
+}
+
 .line-art-on-dark {
   color: var(--color-draw-on-dark);
 }
@@ -48,27 +59,60 @@
   stroke-width: var(--line-stroke-thin);
 }
 
+.line-art-spine path,
+.line-art-leaf path {
+  stroke-width: var(--line-stroke-stem);
+}
+
+.line-art-spine svg {
+  width: 100%;
+  height: 100%;
+}
+
 .scroll-stem-host {
   position: relative;
 }
 
 .scroll-stem {
   position: absolute;
-  top: var(--space-4);
-  left: var(--gutter);
+  inset-block: 0;
+  inset-inline-start: max(var(--space-1), calc((100% - var(--container)) / 2));
   width: var(--line-stem);
   pointer-events: none;
   z-index: 1;
 }
 
-.scroll-stem-end {
-  left: auto;
-  right: var(--gutter);
-}
-
 .scroll-stem .line-draw {
   display: block;
   width: 100%;
+}
+
+.scroll-stem-line,
+.scroll-stem-line svg {
+  height: 100%;
+}
+
+.scroll-stem .scroll-leaf {
+  position: absolute;
+  inset-inline-start: 10%;
+  width: var(--line-leaf);
+}
+
+.scroll-leaf-a {
+  inset-block-start: 18%;
+}
+
+.scroll-leaf-b {
+  inset-block-start: 46%;
+}
+
+.scroll-leaf-c {
+  inset-block-start: 72%;
+}
+
+.scroll-stem-mirrored .scroll-leaf {
+  transform: scaleX(-1);
+  transform-origin: center;
 }
 
 /* non-scaling-stroke dashes in host pixels. A unitless 1 finishes while the
@@ -77,6 +121,12 @@ html.motion-ready .line-draw path {
   --draw-scale: calc(100cqw / var(--vb-w) * 1px);
   stroke-dasharray: var(--draw-scale);
   stroke-dashoffset: var(--draw-scale);
+}
+
+/* A stretched stem is much taller than its viewBox. Width-based dashes
+   repeat and stop short; the block size matches the rendered path. */
+html.motion-ready .line-art-spine path {
+  --draw-scale: calc(100cqh / var(--vb-h) * 1px);
 }
 
 html.motion-ready .line-draw.is-drawn path {
@@ -110,9 +160,39 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   transition-delay: calc(var(--draw-stagger) * 5);
 }
 
+@keyframes stem-grow {
+  from {
+    stroke-dashoffset: var(--draw-scale);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Scroll-linked stem. Leaves stay on the once-only draw below.
+   Browsers without view timelines keep the intersection draw. */
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .line-draw-grow path {
+      animation-name: stem-grow;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view(block);
+      animation-range: entry;
+    }
+
+    html.motion-ready .line-draw-grow.is-drawn path {
+      transition: none;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html.motion-ready .line-draw path,
-  html.motion-ready .line-draw.is-drawn path {
+  html.motion-ready .line-draw.is-drawn path,
+  html.motion-ready .line-draw-grow path {
+    animation: none;
     stroke-dasharray: none;
     stroke-dashoffset: 0;
     transition: none;

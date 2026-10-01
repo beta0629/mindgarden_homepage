@@ -19,7 +19,7 @@ export function PrivacyBand({
 }) {
   return (
     <section className="section-defer relative overflow-hidden bg-deep py-section text-on-deep">
-      <LineArt kind="vine" tone="onDark" thin faint className="pointer-events-none absolute inset-x-0 top-8" />
+      <LineArt kind="vine" tone="onDark" className="pointer-events-none absolute inset-x-0 top-8" />
       <Container className="relative grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col gap-8">
           <p className="type-eyebrow text-on-deep-2">{eyebrow}</p>

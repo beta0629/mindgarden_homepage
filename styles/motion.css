@@ -1,5 +1,23 @@
 .line-art {
   color: var(--color-draw);
+  container-type: inline-size;
+  --vb-w: var(--vb-butterfly);
+}
+
+.line-art-butterfly {
+  --vb-w: var(--vb-butterfly);
+}
+
+.line-art-stem {
+  --vb-w: var(--vb-stem);
+}
+
+.line-art-sprig {
+  --vb-w: var(--vb-sprig);
+}
+
+.line-art-vine {
+  --vb-w: var(--vb-vine);
 }
 
 .line-art-on-dark {
@@ -53,16 +71,23 @@
   width: 100%;
 }
 
+/* non-scaling-stroke dashes in host pixels. A unitless 1 finishes while the
+   scaled path is still hidden. Dash length is the SVG width / viewBox width. */
 html.motion-ready .line-draw path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
+  --draw-scale: calc(100cqw / var(--vb-w) * 1px);
+  stroke-dasharray: var(--draw-scale);
+  stroke-dashoffset: var(--draw-scale);
+  transition-property: stroke-dashoffset;
+  transition-duration: var(--dur-draw);
+  transition-timing-function: var(--ease-draw);
+}
+
+html.motion-ready .line-draw-short path {
+  transition-duration: var(--dur-draw-short);
 }
 
 html.motion-ready .line-draw.is-drawn path {
   stroke-dashoffset: 0;
-  transition-property: stroke-dashoffset;
-  transition-duration: var(--dur-draw);
-  transition-timing-function: var(--ease-draw);
 }
 
 html.motion-ready .line-draw.is-drawn path:nth-child(2) {
@@ -85,13 +110,10 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   transition-delay: calc(var(--draw-stagger) * 5);
 }
 
-html.motion-ready .line-draw-short.is-drawn path {
-  transition-duration: var(--dur-draw-short);
-}
-
 @media (prefers-reduced-motion: reduce) {
   html.motion-ready .line-draw path,
   html.motion-ready .line-draw.is-drawn path {
+    stroke-dasharray: none;
     stroke-dashoffset: 0;
     transition: none;
   }

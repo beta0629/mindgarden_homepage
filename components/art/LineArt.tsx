@@ -18,12 +18,19 @@ export function LineArt({
   className?: string;
 }) {
   const art = lineArt(kind);
+  const kindClass = {
+    butterfly: "line-art-butterfly",
+    stem: "line-art-stem",
+    sprig: "line-art-sprig",
+    vine: "line-art-vine",
+  } as const;
   return (
     <LineDraw
       mode={draw}
       short={kind !== "butterfly"}
       className={cn(
         "line-art",
+        kindClass[kind],
         tone === "onDark" && "line-art-on-dark",
         thin && "line-art-thin",
         faint && "line-art-faint",

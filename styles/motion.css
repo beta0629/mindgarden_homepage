@@ -108,7 +108,8 @@ html.motion-ready .plant-anchor,
   top: 0;
   bottom: calc(-1 * var(--page-stem-footer));
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
+  overflow: hidden;
 }
 
 /* Same path, shown only across deep bands in the on-dark green. */

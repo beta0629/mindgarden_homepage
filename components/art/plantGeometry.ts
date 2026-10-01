@@ -792,7 +792,7 @@ export function buildPlant({
   });
   const minX = stroke;
   const maxX = Math.max(minX, width - stroke);
-  const calmed = routed.points;
+  const calmed = calmRoute(routed.points, width, stroke);
   const joined = takeJoin(calmed, Math.max(240, leaf * 1.8));
   const curve = (segment: Point[]) => curvesThrough(segment, minX, maxX);
   const spine = curve(joined.rest);

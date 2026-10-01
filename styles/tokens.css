@@ -105,8 +105,8 @@
   --line-stroke-stem: 15px;
   --line-stroke-vein: 5.5px;
   --line-stroke-wing: 3.5px;
-  /* Full brand green so the stem reads in the gaps between photos. */
-  --line-opacity: 1;
+  /* Faint plant behind text and photos. */
+  --line-opacity: 0.42;
   /* Lateral bow of the stem where a gap allows it. */
   --line-bend: 1.75rem;
   /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */

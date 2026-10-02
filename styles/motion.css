@@ -160,7 +160,7 @@ footer :is(a, p, li, span, img) {
   stroke-width: var(--line-stroke-wing);
 }
 
-/* 10px #438646 stroke. One open path; the corner radius is baked into that path. */
+/* Programs loop. Width and color come from tokens. The corner radius is baked into the path. */
 .wrap-line {
   fill: none;
   stroke: var(--color-draw);
@@ -319,7 +319,7 @@ html.motion-ready .line-draw.is-drawn path:nth-child(6) {
   }
 }
 
-/* One open stroke from above the programs title to under the first photo.
+/* One stroke around the program cards.
    pathLength is 1, so a dash of 1 is the whole stroke.
    It stays unpainted on the hero, then finishes as that text block enters. */
 @keyframes wrap-draw {

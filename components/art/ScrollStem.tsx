@@ -30,7 +30,7 @@ function programCopy(host: HTMLElement, stemBox: DOMRect) {
 
 function programCard(host: HTMLElement, stemBox: DOMRect) {
   const copy = host.querySelector(".program-copy");
-  const card = copy?.closest("section")?.querySelector<HTMLElement>(".program-photo");
+  const card = copy?.closest("section")?.querySelector<HTMLElement>(".program-cards");
   if (!card) return null;
   const style = getComputedStyle(card);
   if (style.display === "none" || style.visibility === "hidden") return null;
@@ -70,13 +70,14 @@ export function ScrollStem({ children }: { children: ReactNode }) {
       const stemBox = stem.getBoundingClientRect();
       if (stemBox.width < 2 || stemBox.height < 2) return;
       const pad = readPx("--line-wrap-pad") || 28;
-      const under = readPx("--line-wrap-under") || 8;
+      const under = readPx("--line-wrap-under") || 20;
       const radius = readPx("--line-wrap-radius") || 32;
+      const stroke = readPx("--line-stroke-wrap") || 16;
       const text = programCopy(host, stemBox);
       const card = programCard(host, stemBox);
       const textSum = text ? [text.x, text.y, text.w, text.h].map((n) => Math.round(n)).join(",") : "none";
       const cardSum = card ? [card.x, card.y, card.w, card.h].map((n) => Math.round(n)).join(",") : "none";
-      const nextSignature = [stemBox.width.toFixed(1), stemBox.height.toFixed(1), pad.toFixed(1), under.toFixed(1), radius.toFixed(1), textSum, cardSum].join(":");
+      const nextSignature = [stemBox.width.toFixed(1), stemBox.height.toFixed(1), pad.toFixed(1), under.toFixed(1), radius.toFixed(1), stroke.toFixed(1), textSum, cardSum].join(":");
       if (nextSignature !== signature.current) {
         signature.current = nextSignature;
         setGeo(
@@ -88,6 +89,7 @@ export function ScrollStem({ children }: { children: ReactNode }) {
             pad,
             under,
             radius,
+            stroke,
           }),
         );
       }

@@ -28,10 +28,10 @@ export function ProgramGrid({
     <section className="section-defer py-section">
       <Container className="flex flex-col gap-12 lg:gap-16">
         <SectionHeader className="program-copy" eyebrow={eyebrow} title={title} lead={lead} as={heading} />
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          {items.map((item, index) => (
+        <div className="program-cards grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {items.map((item) => (
             <SiteLink key={item.href} link={{ label: item.title, href: item.href, external: false }} className="flex flex-col gap-4">
-              <Photo image={item.image} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22vw" className={index === 0 ? "program-photo" : undefined} />
+              <Photo image={item.image} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22vw" />
               <p className="type-xs font-semibold text-brand">{item.tag}</p>
               <h3 className="type-h3 text-ink">{item.title}</h3>
               <p className="type-sm text-ink-2">{item.desc}</p>

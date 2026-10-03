@@ -1,3 +1,4 @@
+import { ChairBook } from "@/components/art/ChairBook";
 import { LineArt } from "@/components/art/LineArt";
 import { Container } from "@/components/layout/Container";
 import { Photo } from "@/components/media/Photo";
@@ -12,6 +13,7 @@ export function PrivacyBand({
   points,
   image,
   flowStem = false,
+  lineScene = false,
 }: {
   eyebrow: string;
   title: string;
@@ -19,7 +21,33 @@ export function PrivacyBand({
   points: { title: string; desc: string }[];
   image: Media;
   flowStem?: boolean;
+  lineScene?: boolean;
 }) {
+  if (lineScene) {
+    return (
+      <section className="news-line">
+        <div className="news-line-frame">
+          <ChairBook />
+          <div className="news-line-copy">
+            <p className="news-line-kicker type-eyebrow-en">{eyebrow}</p>
+            <h2 className="type-h2">
+              <TextLines text={title} />
+            </h2>
+            <p className="type-lead">{lead}</p>
+            <ul className="news-line-points">
+              {points.map((point) => (
+                <li key={point.title}>
+                  <p className="type-h3">{point.title}</p>
+                  <p className="type-sm mt-2">{point.desc}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       className={cn(

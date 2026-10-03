@@ -377,37 +377,115 @@ html.motion-ready .wrap-line {
   }
 }
 
-/* One open stroke on the hero paper. pathLength is 1, so dashoffset 1 is undrawn. */
+/* Paper hero: stool and pot on the left, copy on the right. */
 .hero-stage {
   position: relative;
-  view-timeline-name: --hero-draw;
+  background: var(--color-paper);
+}
+
+.hero-still,
+.chair-still {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.hero-still {
+  color: var(--color-ink);
+}
+
+.chair-still {
+  color: var(--color-on-primary);
+}
+
+.still-ink path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--line-stroke-still);
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8) var(--gutter) var(--space-12);
+}
+
+@media (width >= 80rem) {
+  .hero-copy {
+    position: absolute;
+    top: 12%;
+    left: 52%;
+    width: min(36rem, 44%);
+    padding: 0 var(--gutter) 0 0;
+  }
+}
+
+/* Full-bleed brand green. Chair and book on the left; the title meets the stroke. */
+.news-line {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  view-timeline-name: --news-line;
   view-timeline-axis: block;
 }
 
-.hero-line {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
+.news-line-frame {
+  position: relative;
 }
 
-.hero-open-stroke {
-  fill: none;
-  stroke: var(--color-draw);
-  stroke-width: var(--line-stroke-hero);
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.news-line-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-10) var(--gutter) var(--space-16);
 }
 
-html.motion-ready .hero-open-stroke {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
+.news-line-copy :is(h2, p) {
+  margin: 0;
 }
 
-@keyframes hero-open-draw {
+.news-line-points {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.news-line .type-eyebrow,
+.news-line .type-eyebrow-en,
+.news-line .type-h2,
+.news-line .type-h3,
+.news-line .type-lead,
+.news-line .type-sm {
+  color: var(--color-on-primary);
+}
+
+.news-line .type-lead,
+.news-line .type-sm {
+  color: var(--color-on-deep);
+}
+
+@media (width >= 80rem) {
+  .news-line-copy {
+    position: absolute;
+    left: calc(858 / 1440 * 100%);
+    top: calc(175 / 820 * 100%);
+    width: calc((1440 - 858) / 1440 * 100% - var(--gutter));
+    padding: 0;
+    transform: translateY(calc(-0.62 * var(--text-h2)));
+  }
+
+  .news-line-kicker {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    margin: 0 0 0.75rem;
+  }
+}
+
+@keyframes open-stroke-draw {
   from {
     stroke-dashoffset: 1;
   }
@@ -416,28 +494,68 @@ html.motion-ready .hero-open-stroke {
   }
 }
 
+.hero-open-stroke,
+.news-open-stroke {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.hero-open-stroke {
+  stroke: var(--color-draw);
+  stroke-width: var(--line-stroke-hero);
+}
+
+.news-open-stroke {
+  stroke: var(--color-on-primary);
+  stroke-width: var(--line-stroke-news);
+}
+
+/* Hero stroke is tied to the document scroll so it is unfinished at scroll 0. */
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   @media (prefers-reduced-motion: no-preference) {
     html.motion-ready .hero-open-stroke {
-      animation-name: hero-open-draw;
+      animation-name: open-stroke-draw;
       animation-duration: auto;
       animation-timing-function: linear;
       animation-fill-mode: both;
-      animation-timeline: --hero-draw;
-      animation-range: cover 0% cover 100%;
+      animation-timeline: scroll(root block);
+      animation-range: 0px var(--hero-stroke-distance);
+    }
+  }
+}
+
+/* White stroke draws as its section enters, then holds. */
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .news-open-stroke {
+      animation-name: open-stroke-draw;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --news-line;
+      animation-range: entry 0% entry 72%;
     }
   }
 }
 
 @supports not ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-  html.motion-ready .hero-open-stroke {
-    stroke-dasharray: none;
+  .hero-open-stroke {
+    stroke-dashoffset: 0;
+  }
+}
+
+@supports not ((animation-timeline: view()) and (animation-range: entry)) {
+  .news-open-stroke {
     stroke-dashoffset: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-open-stroke {
+  .hero-open-stroke,
+  .news-open-stroke {
     animation: none;
     transition: none;
     stroke-dasharray: none;

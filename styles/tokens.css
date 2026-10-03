@@ -101,6 +101,14 @@
   --page-stem-footer: 12rem;
   /* On-screen stroke of the programs line. The viewBox is 1 CSS pixel per user unit. */
   --line-stroke-wrap: 16px;
+  /* Open hero stroke. 3 user units when the 1440 viewBox is shown at 1440px. */
+  --line-stroke-hero: 3px;
+  /* Open white stroke on the green band. */
+  --line-stroke-news: 18px;
+  /* Ink still-life lines (stool, pot, chair, book). */
+  --line-stroke-still: 2.5px;
+  /* Root-scroll distance over which the hero stroke finishes while the still life stays in view. */
+  --hero-stroke-distance: 100px;
   --line-stroke-stem: 2px;
   --line-stroke-vein: 1.25px;
   --line-stroke-wing: 1.35px;
@@ -128,8 +136,6 @@
   --vb-leaf: 48px;
   --line-stroke: 1.5;
   --line-stroke-thin: 1.5;
-  /* Open hero stroke. Unitless so the 1440 viewBox uses stroke-width 3. */
-  --line-stroke-hero: 3;
   --line-final: 22rem;
   --z-header: 40; --z-bar: 50;
   --color-on-primary: #FFFFFF;

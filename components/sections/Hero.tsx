@@ -1,8 +1,10 @@
 import { Calendar, Check, Phone } from "lucide-react";
-import { HeroStillLife } from "@/components/art/HeroStillLife";
+import { LineArt } from "@/components/art/LineArt";
+import { Container } from "@/components/layout/Container";
 import { ButtonLink } from "@/components/links/ButtonLink";
 import { SiteLink } from "@/components/links/SiteLink";
-import type { LinkItem } from "@/lib/types";
+import { Photo } from "@/components/media/Photo";
+import type { LinkItem, Media } from "@/lib/types";
 
 export function Hero({
   eyebrow,
@@ -10,6 +12,7 @@ export function Hero({
   lead,
   primaryCta,
   notes,
+  image,
   floatCard,
   booking,
   phone,
@@ -19,48 +22,63 @@ export function Hero({
   lead: string;
   primaryCta: string;
   notes: string[];
+  image: Media;
   floatCard: { label: string; title: string; detail: string; price: string };
   booking: LinkItem;
   phone: LinkItem;
 }) {
   return (
-    <section className="hero-stage">
-      <HeroStillLife />
-      <div className="hero-copy">
-        <p className="type-eyebrow">{eyebrow}</p>
-        <h1 className="type-display mt-4 lg:mt-6">
-          {titleLines.map((line) => (
-            <span key={line} className="block">
-              {line}
-            </span>
-          ))}
-        </h1>
-        <p className="type-lead mt-5 max-w-measure lg:mt-8">{lead}</p>
-        <div className="mt-6 flex flex-wrap items-center gap-6 lg:mt-12">
-          <ButtonLink link={booking} size="lg">
-            <Calendar data-icon="inline-start" aria-hidden="true" />
-            {primaryCta}
-          </ButtonLink>
-          <SiteLink link={phone} className="inline-flex items-center gap-2 type-sm text-ink hover:text-brand">
-            <Phone className="size-4 text-brand" aria-hidden="true" />
-            {phone.label}
-          </SiteLink>
+    <section className="hero-stage pt-6 pb-10 lg:pt-20 lg:pb-24">
+      <svg className="hero-line" viewBox="0 0 1440 860" preserveAspectRatio="xMinYMin meet" aria-hidden="true">
+        <path
+          className="hero-open-stroke"
+          pathLength={1}
+          d="M 48 280 C 120 150, 270 150, 240 270 C 210 390, 70 370, 90 250 C 120 140, 340 120, 520 230 C 640 300, 600 360, 540 400 C 500 430, 597 332, 627 372"
+        />
+      </svg>
+      <Container className="grid items-center gap-6 lg:grid-cols-2 lg:gap-16">
+        <div className="flex flex-col">
+          <span className="plant-anchor plant-anchor-slot mb-5 lg:mb-8" aria-hidden="true">
+            <LineArt kind="butterfly" draw="static" thin className="block w-full" />
+          </span>
+          <p className="type-eyebrow">{eyebrow}</p>
+          <h1 className="type-display mt-4 lg:mt-6">
+            {titleLines.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </h1>
+          <p className="type-lead mt-5 max-w-measure lg:mt-8">{lead}</p>
+          <div className="mt-6 flex flex-wrap items-center gap-6 lg:mt-12">
+            <ButtonLink link={booking} size="lg">
+              <Calendar data-icon="inline-start" aria-hidden="true" />
+              {primaryCta}
+            </ButtonLink>
+            <SiteLink link={phone} className="inline-flex items-center gap-2 type-sm text-ink hover:text-brand">
+              <Phone className="size-4 text-brand" aria-hidden="true" />
+              {phone.label}
+            </SiteLink>
+          </div>
+          <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2 lg:mt-8">
+            {notes.map((note) => (
+              <li key={note} className="inline-flex items-center gap-2 type-sm text-ink-2">
+                <Check className="size-4 text-brand" aria-hidden="true" />
+                {note}
+              </li>
+            ))}
+          </ul>
         </div>
-        <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2 lg:mt-8">
-          {notes.map((note) => (
-            <li key={note} className="inline-flex items-center gap-2 type-sm text-ink-2">
-              <Check className="size-4 text-brand" aria-hidden="true" />
-              {note}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-8 flex flex-col items-start gap-1">
-          <span className="type-xs font-semibold text-coral">{floatCard.label}</span>
-          <span className="type-h3 text-ink">{floatCard.title}</span>
-          <span className="type-sm text-ink-2">{floatCard.detail}</span>
-          <span className="type-sm font-semibold text-brand">{floatCard.price}</span>
-        </div>
-      </div>
+        <figure className="flex flex-col gap-4">
+          <Photo image={image} sizes="(max-width: 1024px) 100vw, 46vw" eager frame="hero" />
+          <figcaption className="flex flex-col items-start gap-1 lg:items-end lg:text-right">
+            <span className="type-xs font-semibold text-coral">{floatCard.label}</span>
+            <span className="type-h3 text-ink">{floatCard.title}</span>
+            <span className="type-sm text-ink-2">{floatCard.detail}</span>
+            <span className="type-sm font-semibold text-brand">{floatCard.price}</span>
+          </figcaption>
+        </figure>
+      </Container>
     </section>
   );
 }

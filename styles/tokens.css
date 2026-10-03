@@ -105,9 +105,7 @@
   --line-stroke-hero: 3px;
   /* Open white stroke on the green band. */
   --line-stroke-news: 18px;
-  /* Ink still-life lines (stool, pot, chair, book). */
-  --line-stroke-still: 2.5px;
-  /* Root-scroll distance over which the hero stroke finishes while the still life stays in view. */
+  /* Root-scroll distance over which the hero stroke finishes. */
   --hero-stroke-distance: 100px;
   --line-stroke-stem: 2px;
   --line-stroke-vein: 1.25px;

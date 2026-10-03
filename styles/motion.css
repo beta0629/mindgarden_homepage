@@ -377,7 +377,7 @@ html.motion-ready .wrap-line {
   }
 }
 
-/* Paper hero: stool and pot on the left, copy on the right. */
+/* Paper hero. Copy sits on the right at wide widths. */
 .hero-stage {
   position: relative;
   background: var(--color-paper);
@@ -389,22 +389,6 @@ html.motion-ready .wrap-line {
   width: 100%;
   height: auto;
   overflow: visible;
-}
-
-.hero-still {
-  color: var(--color-ink);
-}
-
-.chair-still {
-  color: var(--color-on-primary);
-}
-
-.still-ink path {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: var(--line-stroke-still);
 }
 
 .hero-copy {
@@ -425,7 +409,7 @@ html.motion-ready .wrap-line {
   }
 }
 
-/* Full-bleed brand green. Chair and book on the left; the title meets the stroke. */
+/* Full-bleed brand green. The title meets the open stroke. */
 .news-line {
   background: var(--color-primary);
   color: var(--color-on-primary);

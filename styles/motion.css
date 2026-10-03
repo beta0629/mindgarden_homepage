@@ -1,0 +1,548 @@
+.line-art {
+  color: var(--color-draw);
+  container-type: inline-size;
+  --vb-w: var(--vb-butterfly);
+}
+
+.line-art-butterfly {
+  --vb-w: var(--vb-butterfly);
+}
+
+.line-art-stem {
+  --vb-w: var(--vb-stem);
+}
+
+.line-art-sprig {
+  --vb-w: var(--vb-sprig);
+}
+
+.line-art-vine {
+  --vb-w: var(--vb-vine);
+}
+
+.line-art-spine {
+  --vb-w: var(--vb-spine);
+  --vb-h: var(--vb-spine-h);
+  container-type: size;
+  height: 100%;
+}
+
+.line-art-leaf {
+  --vb-w: var(--vb-leaf);
+}
+
+.line-art-on-dark {
+  color: var(--color-draw-on-dark);
+}
+
+.line-art-faint {
+  opacity: var(--line-faint);
+}
+
+.line-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.line-art path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--line-stroke);
+  vector-effect: non-scaling-stroke;
+}
+
+.line-art-thin path {
+  stroke-width: var(--line-stroke-thin);
+}
+
+.line-art-spine path,
+.line-art-leaf path {
+  stroke-width: var(--line-stroke-stem);
+}
+
+.line-art-spine svg {
+  width: 100%;
+  height: 100%;
+}
+
+.plant-anchor {
+  display: block;
+  position: relative;
+  z-index: 2;
+}
+
+.plant-anchor-slot {
+  width: var(--line-butterfly);
+  aspect-ratio: 544 / 408;
+}
+
+.scroll-stem-host {
+  position: relative;
+  isolation: isolate;
+  timeline-scope: --program-copy;
+}
+
+/* The programs intro is the subject. The stroke lives in the page overlay, so the name is hoisted here. */
+.program-copy {
+  view-timeline-name: --program-copy;
+  view-timeline-axis: block;
+}
+
+html {
+  overflow-x: clip;
+}
+
+/* Offscreen sections skip layout, so the stem would be measured through the
+   wrong gaps. Keep them painted. Their own overflow still clips decoration. */
+.scroll-stem-host .section-defer {
+  content-visibility: visible;
+}
+
+/* The plant is behind text and photos. Leaves in the gaps stay visible. */
+.scroll-stem-host :is(h1, h2, h3, p, li, blockquote, figcaption, button),
+.scroll-stem-host a:not(:has(img)),
+.scroll-stem-host :is(.media-frame, .map-frame),
+footer :is(a, p, li, span, img) {
+  position: relative;
+  z-index: 2;
+}
+
+.scroll-stem {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  bottom: calc(-1 * var(--page-stem-footer));
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Same path, shown only across deep bands in the on-dark green. */
+.scroll-stem-dark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  clip-path: url(#page-stem-dark);
+}
+
+.scroll-stem-clip {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.plant-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: var(--color-draw);
+}
+
+.plant-on-dark {
+  color: var(--color-draw-on-dark);
+}
+
+.plant-svg path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: none;
+}
+
+.plant-wing {
+  stroke-width: var(--line-stroke-wing);
+}
+
+/* Programs loop. Width and color come from tokens. The corner radius is baked into the path. */
+.wrap-line {
+  fill: none;
+  stroke: var(--color-draw);
+  stroke-width: var(--line-stroke-wrap);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 1;
+}
+
+.plant-join,
+.plant-stem,
+.plant-spine,
+.plant-leaf-outline {
+  stroke-width: var(--line-stroke-stem);
+  opacity: var(--line-opacity);
+}
+
+.plant-leaf-midrib,
+.plant-leaf-vein {
+  stroke-width: var(--line-stroke-vein);
+  opacity: var(--line-opacity);
+}
+
+/* non-scaling-stroke dashes in host pixels. A unitless 1 finishes while the
+   scaled path is still hidden. Dash length is the SVG width / viewBox width. */
+html.motion-ready .line-draw path {
+  --draw-scale: calc(100cqw / var(--vb-w) * 1px);
+  stroke-dasharray: var(--draw-scale);
+  stroke-dashoffset: var(--draw-scale);
+}
+
+/* The hero butterfly is a finished thin drawing. The wrapping line is the scroll stroke. */
+html.motion-ready .line-art-butterfly path {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  animation: none;
+  transition: none;
+}
+
+/* A stretched stem is much taller than its viewBox. Width-based dashes
+   repeat and stop short; the block size matches the rendered path. */
+html.motion-ready .line-art-spine path {
+  --draw-scale: calc(100cqh / var(--vb-h) * 1px);
+}
+
+html.motion-ready .line-draw.is-drawn path {
+  stroke-dashoffset: 0;
+  transition-property: stroke-dashoffset;
+  transition-duration: var(--dur-draw);
+  transition-timing-function: var(--ease-draw);
+}
+
+html.motion-ready .line-draw-short.is-drawn path {
+  transition-duration: var(--dur-draw-short);
+}
+
+html.motion-ready .line-draw-leaf.is-drawn path {
+  transition-duration: var(--dur-draw-leaf);
+  transition-timing-function: var(--ease-out);
+}
+
+html.motion-ready .line-draw.is-drawn path:nth-child(2) {
+  transition-delay: calc(var(--draw-stagger) * 1);
+}
+
+html.motion-ready .line-draw.is-drawn path:nth-child(3) {
+  transition-delay: calc(var(--draw-stagger) * 2);
+}
+
+html.motion-ready .line-draw.is-drawn path:nth-child(4) {
+  transition-delay: calc(var(--draw-stagger) * 3);
+}
+
+html.motion-ready .line-draw.is-drawn path:nth-child(5) {
+  transition-delay: calc(var(--draw-stagger) * 4);
+}
+
+html.motion-ready .line-draw.is-drawn path:nth-child(6) {
+  transition-delay: calc(var(--draw-stagger) * 5);
+}
+
+@keyframes stem-grow {
+  from {
+    stroke-dashoffset: calc(var(--draw-scale) * var(--stem-shown-start));
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes leaf-grow {
+  from {
+    stroke-dashoffset: var(--draw-scale);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* One document timeline: the stem grows from the hero toward the footer,
+   and leaves draw when that same progress reaches them.
+   Browsers without scroll timelines keep the once-only intersection draw. */
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .line-draw-grow path {
+      animation-name: stem-grow;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+    }
+
+    html.motion-ready .line-draw-leaf path {
+      animation-name: leaf-grow;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+    }
+
+    html.motion-ready .scroll-leaf-a path {
+      animation-range: 10% 18%;
+    }
+
+    html.motion-ready .scroll-leaf-b path {
+      animation-range: 38% 48%;
+    }
+
+    html.motion-ready .scroll-leaf-c path {
+      animation-range: 66% 76%;
+    }
+
+    html.motion-ready .line-draw-grow.is-drawn path,
+    html.motion-ready .line-draw-leaf.is-drawn path {
+      transition: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.motion-ready .line-draw path,
+  html.motion-ready .line-draw.is-drawn path,
+  html.motion-ready .line-draw-grow path,
+  html.motion-ready .line-draw-leaf path,
+  .plant-wing,
+  .plant-join,
+  .plant-spine,
+  .plant-stem,
+  .plant-leaf-outline,
+  .plant-leaf-midrib,
+  .plant-leaf-vein {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
+
+/* One stroke around the program cards.
+   pathLength is 1, so a dash of 1 is the whole stroke.
+   It stays unpainted on the hero, then finishes as that text block enters. */
+@keyframes wrap-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+html.motion-ready .wrap-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .wrap-line {
+      animation-name: wrap-draw;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --program-copy;
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@supports not ((animation-timeline: view()) and (animation-range: entry)) {
+  html.motion-ready .wrap-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.motion-ready .wrap-line,
+  .wrap-line,
+  .plant-wing,
+  .plant-join,
+  .plant-spine,
+  .plant-stem,
+  .plant-leaf-outline,
+  .plant-leaf-midrib,
+  .plant-leaf-vein {
+    animation: none;
+    transition: none;
+  }
+
+  html.motion-ready .wrap-line,
+  .wrap-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Paper hero. Copy sits on the right at wide widths. */
+.hero-stage {
+  position: relative;
+  background: var(--color-paper);
+}
+
+.hero-still,
+.chair-still {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8) var(--gutter) var(--space-12);
+}
+
+@media (width >= 80rem) {
+  .hero-copy {
+    position: absolute;
+    top: 12%;
+    left: 52%;
+    width: min(36rem, 44%);
+    padding: 0 var(--gutter) 0 0;
+  }
+}
+
+/* Full-bleed brand green. The title meets the open stroke. */
+.news-line {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  view-timeline-name: --news-line;
+  view-timeline-axis: block;
+}
+
+.news-line-frame {
+  position: relative;
+}
+
+.news-line-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-10) var(--gutter) var(--space-16);
+}
+
+.news-line-copy :is(h2, p) {
+  margin: 0;
+}
+
+.news-line-points {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.news-line .type-eyebrow,
+.news-line .type-eyebrow-en,
+.news-line .type-h2,
+.news-line .type-h3,
+.news-line .type-lead,
+.news-line .type-sm {
+  color: var(--color-on-primary);
+}
+
+.news-line .type-lead,
+.news-line .type-sm {
+  color: var(--color-on-deep);
+}
+
+@media (width >= 80rem) {
+  .news-line-copy {
+    position: absolute;
+    left: calc(858 / 1440 * 100%);
+    top: calc(175 / 820 * 100%);
+    width: calc((1440 - 858) / 1440 * 100% - var(--gutter));
+    padding: 0;
+    transform: translateY(calc(-0.62 * var(--text-h2)));
+  }
+
+  .news-line-kicker {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    margin: 0 0 0.75rem;
+  }
+}
+
+@keyframes open-stroke-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hero-open-stroke,
+.news-open-stroke {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.hero-open-stroke {
+  stroke: var(--color-draw);
+  stroke-width: var(--line-stroke-hero);
+}
+
+.news-open-stroke {
+  stroke: var(--color-on-primary);
+  stroke-width: var(--line-stroke-news);
+}
+
+/* Hero stroke is tied to the document scroll so it is unfinished at scroll 0. */
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .hero-open-stroke {
+      animation-name: open-stroke-draw;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0px var(--hero-stroke-distance);
+    }
+  }
+}
+
+/* White stroke draws as its section enters, then holds. */
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.motion-ready .news-open-stroke {
+      animation-name: open-stroke-draw;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --news-line;
+      animation-range: entry 0% entry 72%;
+    }
+  }
+}
+
+@supports not ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  .hero-open-stroke {
+    stroke-dashoffset: 0;
+  }
+}
+
+@supports not ((animation-timeline: view()) and (animation-range: entry)) {
+  .news-open-stroke {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-open-stroke,
+  .news-open-stroke {
+    animation: none;
+    transition: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}

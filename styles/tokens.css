@@ -1,0 +1,165 @@
+/* 디자인 토큰 — UI 그린은 오너 샘플 #438646. 로고 원색(잉크 #231916, 틸 #00B1A9, 퍼플 #70529F, 코랄 #EF845C, 옐로 #FFD900)은 로고·브랜드 띠에만.
+   실제 빌드에서는 동일 값을 tailwind.config의 theme.extend에 CSS 변수로 연결한다. */
+:root {
+  /* color — neutral */
+  --color-paper: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-sand: #F3EDE4;
+  --color-sand-strong: #E9E0D3;
+  --color-line: #E6DDD1;
+  --color-ink: #231916;
+  --color-ink-2: #574C45;
+  --color-ink-3: #8B8079;
+  /* color — brand. 기준색 #438646 (RGB 67,134,70, 오너 버튼 샘플).
+     흰 글자 대비: #438646 은 4.43:1 로 작은 글자 AA(4.5)에 미달.
+     흰 글자가 올라가는 면만 --color-primary-fill #407F42 (4.85:1). */
+  --color-primary: #438646;
+  --color-primary-fill: #407F42;
+  --color-primary-strong: #366D39;
+  --color-primary-soft: #E8F0E9;
+  --color-deep: #326434;
+  --color-deep-2: #3A733C;
+  --color-on-deep: #F4EFE8;
+  --color-on-deep-2: #D7E8D4;
+  --color-accent: #E7835C;
+  --color-accent-soft: #FBEEE7;
+  --color-plum: #70529F;
+  --color-draw: #438646;           /* 라인 애니메이션 = 브랜드 기준색 */
+  --color-draw-on-dark: #D7E8D4;
+  --gradient-brand: linear-gradient(90deg, #FFD900 0%, #EF845C 30%, #E95377 48%, #70529F 66%, #5386AA 82%, #00B1A9 100%);
+  --overlay-image: linear-gradient(180deg, rgba(50, 100, 52, 0) 55%, rgba(50, 100, 52, 0.32) 100%);
+
+  /* type — Pretendard Variable 단일 패밀리.
+     Fluid clamps run from the 640px mobile size to a large-screen size a bit above the old desktop step.
+     Preferred term is rem + vw so the min/max still track the root font size. */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --font-heading: var(--font-sans);   /* 단일 서체: 제목도 Pretendard */
+  --text-display: clamp(2.375rem, 0.475rem + 4.75vw, 4.75rem); /* 38 → 76 */
+  --text-h1: clamp(2.125rem, 1.025rem + 2.75vw, 3.5rem);       /* 34 → 56 */
+  --text-h2: clamp(1.75rem, 0.85rem + 2.25vw, 2.875rem);       /* 28 → 46 */
+  --text-h3: clamp(1.1875rem, 0.9375rem + 0.625vw, 1.5rem);    /* 19 → 24 */
+  --text-lead: clamp(1.0625rem, 0.9125rem + 0.375vw, 1.25rem); /* 17 → 20 */
+  --text-body: clamp(1rem, 0.9rem + 0.25vw, 1.125rem);         /* 16 → 18 */
+  --text-sm: 0.9375rem;      /* 15 — UI chrome stays put */
+  --text-xs: 0.8125rem;      /* 13 */
+  --text-stat: clamp(2rem, 0.8rem + 3vw, 3.5rem);              /* 32 → 56 */
+  --text-quote: clamp(1.25rem, 0.85rem + 1vw, 1.75rem);        /* 20 → 28 */
+  --text-eyebrow: 0.8125rem; /* 13 */
+  --measure: 65ch;
+  --leading-display: 1.18;
+  --leading-tight: 1.28;
+  --leading-snug: 1.4;
+  --leading-body: 1.75;
+  --tracking-display: -0.035em;
+  --tracking-tight: -0.03em;
+  --tracking-num: -0.02em;
+  --tracking-snug: -0.012em;
+  --tracking-wide: 0.14em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-display: 600;
+  --weight-heading: 600;
+  --weight-title: 500;
+
+  /* space — 4px base */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+  --space-12: 3rem; --space-14: 3.5rem; --space-16: 4rem; --space-20: 5rem;
+  --space-24: 6rem; --space-32: 8rem; --space-36: 9rem; --space-40: 10rem; --space-44: 11rem;
+  /* Section padding grows from the mobile 6rem to 12.5rem on large screens. */
+  --section-y: clamp(6rem, 0.8rem + 13vw, 12.5rem);
+  /* Content width grows from 80rem (1280px) toward a 100rem (1600px) cap. */
+  --container: clamp(80rem, 96vw, 100rem);
+  --container-wide: 100rem;
+  --gutter: clamp(1.25rem, 0.25rem + 2.5vw, 2.5rem);
+  --header-h: 4.75rem;
+  --mobile-bar-h: 4.25rem;
+
+  /* radius */
+  --radius-sm: 0.5rem; --radius-md: 1rem; --radius-lg: 1.5rem; --radius-xl: 2rem; --radius-pill: 999px;
+
+  /* shadow */
+  --shadow-xs: 0 1px 2px rgba(35, 25, 22, 0.04);
+  --shadow-sm: 0 8px 24px rgba(35, 25, 22, 0.05);
+  --shadow-md: 0 16px 40px rgba(35, 25, 22, 0.06);
+  --shadow-lg: 0 24px 48px rgba(35, 25, 22, 0.08);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms; --dur-base: 280ms; --dur-slow: 600ms;
+  --dur-draw: 3.2s; --dur-draw-short: 2.8s; --dur-draw-leaf: 1.35s; --draw-stagger: 120ms;
+
+  /* sizes */
+  --icon-xs: 0.875rem; --icon-sm: 1.125rem; --icon-md: 1.375rem;
+  --line-butterfly: 4.75rem;
+  --line-stem: 2.75rem;
+  --line-leaf: 2.75rem;
+  /* The line overlay runs the full page and continues a short way into the footer. */
+  --page-stem-footer: 12rem;
+  /* On-screen stroke of the programs line. The viewBox is 1 CSS pixel per user unit. */
+  --line-stroke-wrap: 16px;
+  /* Open hero stroke. 3 user units when the 1440 viewBox is shown at 1440px. */
+  --line-stroke-hero: 3px;
+  /* Open white stroke on the green band. */
+  --line-stroke-news: 18px;
+  /* Root-scroll distance over which the hero stroke finishes. */
+  --hero-stroke-distance: 100px;
+  --line-stroke-stem: 2px;
+  --line-stroke-vein: 1.25px;
+  --line-stroke-wing: 1.35px;
+  --line-opacity: 0.45;
+  --line-corner-arm: 5.5rem;
+  --line-leaf-gap: 7rem;
+  --line-butterfly-gap: 16px;
+  --wrap-start: 7rem;
+  /* Gap between the programs copy and the stroke above it and on its left. */
+  --line-wrap-pad: 1.75rem;
+  /* Centerline offset outside the card group so the stroke clears the cards. */
+  --line-wrap-under: 20px;
+  /* Radius of the turns around the program cards. */
+  --line-wrap-radius: 2rem;
+  --line-cluster-gap: 4.5rem;
+  /* Lateral bow of the stem where a gap allows it. */
+  --line-bend: 1.75rem;
+  /* SVG viewBox widths. The draw dash uses these so a scaled stroke still covers the path. */
+  --vb-butterfly: 544px;
+  --vb-stem: 120px;
+  --vb-sprig: 240px;
+  --vb-vine: 1200px;
+  --vb-spine: 80px;
+  --vb-spine-h: 240px;
+  --vb-leaf: 48px;
+  --line-stroke: 1.5;
+  --line-stroke-thin: 1.5;
+  --line-final: 22rem;
+  --z-header: 40; --z-bar: 50;
+  --color-on-primary: #FFFFFF;
+  --color-danger: #8E3B32;
+  --size-brand-bar: 3px;
+  --logo-h: 2.75rem;
+  --control-h: 3rem;
+  --line-faint: 0.4;
+  --section-intrinsic: 40rem;
+}
+@media (max-width: 640px) {
+  :root {
+    --tracking-display: -0.03em;
+    --leading-display: 1.24;
+    --header-h: 4rem;
+    --line-butterfly: 3.75rem;
+    --line-stem: 1.65rem;
+    --line-leaf: 2.25rem;
+    --line-leaf-gap: 5.5rem;
+    --line-stroke-wrap: 16px;
+    --line-corner-arm: 4.25rem;
+    --line-stroke-stem: 2px;
+    --line-bend: 1.15rem;
+    --wrap-start: 5.5rem;
+    --line-wrap-pad: 1.25rem;
+    --line-wrap-radius: 1.5rem;
+    --line-cluster-gap: 3.5rem;
+  }
+}

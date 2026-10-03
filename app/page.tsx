@@ -1,4 +1,3 @@
-import { ScrollStem } from "@/components/art/ScrollStem";
 import { Channels } from "@/components/sections/Channels";
 import { DirectorBlock } from "@/components/sections/DirectorBlock";
 import { FaqList } from "@/components/sections/FaqList";
@@ -48,14 +47,12 @@ export default function HomePage() {
 
   return (
     <main>
-      <ScrollStem>
         <Hero
           eyebrow={home.hero.eyebrow}
           titleLines={[...home.hero.titleLines]}
           lead={home.hero.lead}
           primaryCta={home.hero.primaryCta}
           notes={[...home.hero.note]}
-          image={home.hero.image}
           floatCard={home.hero.floatCard}
           booking={bookingLink}
           phone={phoneLink}
@@ -96,7 +93,7 @@ export default function HomePage() {
           lead={home.privacy.lead}
           points={home.privacy.points}
           image={home.privacy.image}
-          flowStem
+          lineScene
         />
         <SpaceBento
           eyebrow={home.space.eyebrow}
@@ -136,7 +133,6 @@ export default function HomePage() {
           contact={{ label: contactData.title, href: "/contact", external: false }}
           flowStem
         />
-      </ScrollStem>
     </main>
   );
 }

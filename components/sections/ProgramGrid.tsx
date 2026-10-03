@@ -27,7 +27,7 @@ export function ProgramGrid({
   return (
     <section className="section-defer py-section">
       <Container className="flex flex-col gap-12 lg:gap-16">
-        <SectionHeader eyebrow={eyebrow} title={title} lead={lead} as={heading} />
+        <SectionHeader className="program-copy" eyebrow={eyebrow} title={title} lead={lead} as={heading} />
         <div className="program-cards grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {items.map((item) => (
             <SiteLink key={item.href} link={{ label: item.title, href: item.href, external: false }} className="flex flex-col gap-4">

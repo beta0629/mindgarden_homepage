@@ -1,0 +1,18 @@
+export const routes = [
+  { path: "/", priority: 1 },
+  { path: "/about", priority: 0.8 },
+  { path: "/about/director", priority: 0.7 },
+  { path: "/programs", priority: 0.8 },
+  { path: "/programs/adhd-child", priority: 0.7 },
+  { path: "/programs/adhd-adult", priority: 0.7 },
+  { path: "/programs/assessment", priority: 0.7 },
+  { path: "/programs/child-youth", priority: 0.7 },
+  { path: "/programs/adult", priority: 0.7 },
+  { path: "/programs/couple-family", priority: 0.7 },
+  { path: "/pricing", priority: 0.8 },
+  { path: "/first-visit", priority: 0.7 },
+  { path: "/faq", priority: 0.6 },
+  { path: "/location", priority: 0.7 },
+  { path: "/contact", priority: 0.6 },
+  { path: "/privacy", priority: 0.3 },
+] as const;

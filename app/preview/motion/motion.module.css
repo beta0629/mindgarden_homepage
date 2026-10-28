@@ -1,0 +1,468 @@
+/* Route-only motion for /preview/motion. Class names stay local to this module. */
+
+.root :is(h1, h2, h3, p, figure, blockquote) {
+  margin: 0;
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  background: var(--color-paper);
+}
+
+.field,
+.bandField {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.field {
+  background: var(--color-primary-soft);
+  opacity: 0;
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-block: var(--space-12);
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "mark"
+    "titles"
+    "photo"
+    "rest";
+  gap: var(--space-6);
+}
+
+.mark {
+  grid-area: mark;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.word {
+  display: flex;
+  flex-direction: column;
+}
+
+.titles {
+  grid-area: titles;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.heroPhoto {
+  grid-area: photo;
+  min-width: 0;
+}
+
+.rest {
+  grid-area: rest;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.actions,
+.phones,
+.notes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+}
+
+.notes,
+.stats,
+.points,
+.steps,
+.creds,
+.includes,
+.thumbs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.float {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.section {
+  padding-block: var(--section-y);
+}
+
+.tight {
+  padding-block: var(--space-16);
+}
+
+.rule {
+  border-top: 1px solid var(--color-line);
+}
+
+.sand {
+  background: var(--color-sand);
+}
+
+.band {
+  position: relative;
+  isolation: isolate;
+}
+
+.bandField {
+  background: var(--color-primary-soft);
+  opacity: 0;
+}
+
+.bandInner {
+  position: relative;
+  z-index: 1;
+}
+
+.seq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stats {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cards,
+.prices {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.card,
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  padding: var(--space-6);
+}
+
+.featured {
+  border-color: var(--color-primary);
+}
+
+.split {
+  display: grid;
+  gap: var(--space-10);
+  align-items: center;
+}
+
+.stack,
+.figure {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-sand);
+}
+
+.stack {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-xl);
+}
+
+.figure {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+}
+
+.shot,
+.cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.shotBase {
+  z-index: 0;
+  opacity: 1;
+}
+
+.shotMid,
+.shotEnd,
+.enterShot {
+  opacity: 0;
+}
+
+.shotMid {
+  z-index: 1;
+}
+
+.shotEnd,
+.enterShot {
+  z-index: 2;
+}
+
+.points,
+.steps,
+.thumbs,
+.rows {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.thumbs {
+  gap: var(--space-4);
+}
+
+.includes,
+.creds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pre {
+  white-space: pre-line;
+}
+
+.d0 { animation-delay: calc(var(--preview-delay-step) * 0); }
+.d1 { animation-delay: calc(var(--preview-delay-step) * 1); }
+.d2 { animation-delay: calc(var(--preview-delay-step) * 2); }
+.d3 { animation-delay: calc(var(--preview-delay-step) * 3); }
+.d4 { animation-delay: calc(var(--preview-delay-step) * 4); }
+.d5 { animation-delay: calc(var(--preview-delay-step) * 5); }
+.d6 { animation-delay: calc(var(--preview-delay-step) * 6); }
+.d7 { animation-delay: calc(var(--preview-delay-step) * 7); }
+
+@media (min-width: 64rem) {
+  .hero {
+    min-height: calc(100dvh - var(--header-h));
+  }
+
+  .heroInner {
+    padding-block: var(--space-16);
+  }
+
+  .heroGrid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    grid-template-areas:
+      "mark photo"
+      "titles photo"
+      "rest photo";
+    column-gap: var(--space-16);
+    row-gap: var(--space-6);
+    align-items: center;
+  }
+
+  .tight {
+    padding-block: var(--space-20);
+  }
+
+  .stats,
+  .steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .prices,
+  .thumbs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cards,
+  .rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .split .points {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+}
+
+@keyframes preview-arrive {
+  from {
+    opacity: 0;
+    translate: 0 var(--preview-rise);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes preview-settle {
+  from {
+    translate: 0 calc(var(--preview-shift) * -1);
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes preview-field {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes preview-field-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes preview-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mark {
+    animation-name: preview-settle;
+    animation-duration: var(--preview-dur-enter);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: both;
+  }
+
+  .field {
+    animation-name: preview-field;
+    animation-duration: var(--preview-dur-field);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: both;
+  }
+
+  .hero .line {
+    animation-name: preview-arrive;
+    animation-duration: var(--preview-dur-enter);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: both;
+  }
+
+  .hero .shotMid {
+    animation-name: preview-fade;
+    animation-duration: var(--preview-dur-fade);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: forwards;
+    animation-delay: var(--preview-delay-photo);
+  }
+
+  .hero .shotEnd {
+    animation-name: preview-fade;
+    animation-duration: var(--preview-dur-fade);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: forwards;
+    animation-delay: var(--preview-delay-photo-late);
+  }
+
+  .reveal[data-state="wait"] .line {
+    opacity: 0;
+    translate: 0 var(--preview-rise);
+  }
+
+  .reveal[data-state="in"] .line {
+    animation-name: preview-arrive;
+    animation-duration: var(--preview-dur-enter);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: both;
+  }
+
+  .reveal[data-state="in"] .enterShot {
+    animation-name: preview-fade;
+    animation-duration: var(--preview-dur-fade);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: forwards;
+  }
+
+  .band:has(.reveal[data-state="in"]) .bandField {
+    animation-name: preview-field-in;
+    animation-duration: var(--preview-dur-field);
+    animation-timing-function: var(--preview-ease);
+    animation-fill-mode: both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark,
+  .field,
+  .line,
+  .shotBase,
+  .shotMid,
+  .shotEnd,
+  .enterShot,
+  .bandField {
+    animation: none;
+  }
+
+  .mark,
+  .line {
+    opacity: 1;
+    translate: none;
+  }
+
+  .field,
+  .shotBase,
+  .shotMid {
+    opacity: 0;
+  }
+
+  .shotEnd,
+  .enterShot,
+  .bandField {
+    opacity: 1;
+  }
+}
+
+.reveal[data-state="settled"] .line,
+.reveal[data-state="settled"] .mark {
+  animation: none;
+  opacity: 1;
+  translate: none;
+}
+
+.reveal[data-state="settled"] .shotBase,
+.reveal[data-state="settled"] .shotMid {
+  animation: none;
+  opacity: 0;
+}
+
+.reveal[data-state="settled"] .enterShot,
+.reveal[data-state="settled"] .shotEnd,
+.band:has(.reveal[data-state="settled"]) .bandField {
+  animation: none;
+  opacity: 1;
+}

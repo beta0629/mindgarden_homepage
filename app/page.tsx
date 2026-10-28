@@ -75,7 +75,6 @@ export default function HomePage() {
           cta={home.firstVisit.cta}
           image={home.firstVisit.image}
           booking={bookingLink}
-          mark={false}
         />
         <DirectorBlock
           eyebrow={home.director.eyebrow}
@@ -93,7 +92,6 @@ export default function HomePage() {
           lead={home.privacy.lead}
           points={home.privacy.points}
           image={home.privacy.image}
-          lineScene
         />
         <SpaceBento
           eyebrow={home.space.eyebrow}

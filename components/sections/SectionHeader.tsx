@@ -19,7 +19,7 @@ export function SectionHeader({
   const Heading = as;
   return (
     <div className={cn("flex max-w-3xl flex-col gap-5", className)}>
-      {eyebrow ? <p className={latin ? "type-eyebrow-en" : "type-eyebrow"}>{eyebrow}</p> : null}
+      {eyebrow && !latin ? <p className="type-eyebrow">{eyebrow}</p> : null}
       <Heading className={cn(as === "h1" ? "type-h1" : "type-h2", tone === "onDark" ? "text-on-deep" : "text-ink")}>
         {title}
       </Heading>

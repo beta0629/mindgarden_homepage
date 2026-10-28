@@ -6,7 +6,7 @@ export function StatStrip({
   items: { value: string; unit: string; label: string; sub?: string }[];
 }) {
   return (
-    <section className="border-t border-line">
+    <section>
       <Container className="grid grid-cols-2 gap-x-6 gap-y-10 py-16 lg:grid-cols-4 lg:py-20">
         {items.map((item) => (
           <div key={item.label} className="stat-cell flex flex-col gap-4">
@@ -15,7 +15,7 @@ export function StatStrip({
               {item.unit ? <span className="type-h3">{item.unit}</span> : null}
             </p>
             <p className="type-sm text-ink-2">{item.label}</p>
-            {item.sub ? <p className="type-xs text-ink-3">{item.sub}</p> : null}
+            {item.sub ? <p className="type-sm text-ink-2">{item.sub}</p> : null}
           </div>
         ))}
       </Container>

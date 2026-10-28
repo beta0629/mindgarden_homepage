@@ -9,7 +9,8 @@
   --color-line: #E6DDD1;
   --color-ink: #231916;
   --color-ink-2: #574C45;
-  --color-ink-3: #8B8079;
+  /* Muted ink still has to clear 4.5:1 on paper and sand. #8B8079 was 3.6:1. */
+  --color-ink-3: #706556;
   /* color — brand. 기준색 #438646 (RGB 67,134,70, 오너 버튼 샘플).
      흰 글자 대비: #438646 은 4.43:1 로 작은 글자 AA(4.5)에 미달.
      흰 글자가 올라가는 면만 --color-primary-fill #407F42 (4.85:1). */
@@ -87,9 +88,10 @@
   --shadow-lg: 0 24px 48px rgba(35, 25, 22, 0.08);
 
   /* motion */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-fast: 180ms; --dur-base: 280ms; --dur-slow: 600ms;
+  /* Calm ease-out. UI motion stays inside 150–250ms. No bounce. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-draw: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms; --dur-base: 220ms; --dur-slow: 240ms;
   --dur-draw: 3.2s; --dur-draw-short: 2.8s; --dur-draw-leaf: 1.35s; --draw-stagger: 120ms;
 
   /* sizes */

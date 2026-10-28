@@ -1,6 +1,6 @@
 import { Calendar, Check, Phone } from "lucide-react";
-import { HeroStillLife } from "@/components/art/HeroStillLife";
 import { ButtonLink } from "@/components/links/ButtonLink";
+import { Container } from "@/components/layout/Container";
 import { SiteLink } from "@/components/links/SiteLink";
 import type { LinkItem } from "@/lib/types";
 
@@ -24,19 +24,19 @@ export function Hero({
   phone: LinkItem;
 }) {
   return (
-    <section className="hero-stage">
-      <HeroStillLife />
-      <div className="hero-copy">
-        <p className="type-eyebrow">{eyebrow}</p>
-        <h1 className="type-display mt-4 lg:mt-6">
+    <section className="bg-paper pt-12 pb-16 lg:pt-24 lg:pb-section">
+      <Container>
+        <div className="flex max-w-3xl flex-col gap-8">
+        <p className="type-sm text-ink-2">{eyebrow}</p>
+        <h1 className="type-display">
           {titleLines.map((line) => (
             <span key={line} className="block">
               {line}
             </span>
           ))}
         </h1>
-        <p className="type-lead mt-5 max-w-measure lg:mt-8">{lead}</p>
-        <div className="mt-6 flex flex-wrap items-center gap-6 lg:mt-12">
+        <p className="type-lead">{lead}</p>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
           <ButtonLink link={booking} size="lg">
             <Calendar data-icon="inline-start" aria-hidden="true" />
             {primaryCta}
@@ -46,7 +46,7 @@ export function Hero({
             {phone.label}
           </SiteLink>
         </div>
-        <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2 lg:mt-8">
+        <ul className="flex flex-wrap gap-x-6 gap-y-2">
           {notes.map((note) => (
             <li key={note} className="inline-flex items-center gap-2 type-sm text-ink-2">
               <Check className="size-4 text-brand" aria-hidden="true" />
@@ -54,13 +54,14 @@ export function Hero({
             </li>
           ))}
         </ul>
-        <div className="mt-8 flex flex-col items-start gap-1">
-          <span className="type-xs font-semibold text-coral">{floatCard.label}</span>
+        <div className="flex flex-col gap-2">
+          <span className="type-sm text-ink-2">{floatCard.label}</span>
           <span className="type-h3 text-ink">{floatCard.title}</span>
           <span className="type-sm text-ink-2">{floatCard.detail}</span>
-          <span className="type-sm font-semibold text-brand">{floatCard.price}</span>
+          <span className="type-sm font-semibold text-ink">{floatCard.price}</span>
         </div>
-      </div>
+        </div>
+      </Container>
     </section>
   );
 }

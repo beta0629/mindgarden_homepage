@@ -1,4 +1,3 @@
-import { LineArt } from "@/components/art/LineArt";
 import { Container } from "@/components/layout/Container";
 import { ButtonLink } from "@/components/links/ButtonLink";
 import { SiteLink } from "@/components/links/SiteLink";
@@ -25,16 +24,8 @@ export function FinalCta({
   flowStem?: boolean;
 }) {
   return (
-    <section className={cn("relative overflow-hidden bg-deep py-section text-on-deep", flowStem && "page-stem-band")}>
-      {flowStem ? null : (
-        <LineArt
-          kind="butterfly"
-          tone="onDark"
-          faint
-          className="pointer-events-none absolute -right-8 bottom-0 size-final-art"
-        />
-      )}
-      <Container className="relative flex max-w-3xl flex-col items-start gap-8">
+    <section className={cn("bg-deep py-section text-on-deep", flowStem && "page-stem-band")}>
+      <Container className="flex max-w-3xl flex-col items-start gap-8">
         <h2 className="type-h2 text-on-deep">{title}</h2>
         <p className="type-lead text-on-deep-2">{lead}</p>
         <div className="flex flex-wrap items-center gap-4">

@@ -12,7 +12,7 @@ export function PageIntro({
   return (
     <section className="pt-16 pb-8 lg:pt-24">
       <Container className="flex max-w-3xl flex-col gap-5">
-        {eyebrow ? <p className="type-eyebrow">{eyebrow}</p> : null}
+        {eyebrow && !/^[A-Za-z]/.test(eyebrow) ? <p className="type-eyebrow">{eyebrow}</p> : null}
         <h1 className="type-h1 text-ink">{title}</h1>
         {lead ? <p className="type-lead">{lead}</p> : null}
       </Container>

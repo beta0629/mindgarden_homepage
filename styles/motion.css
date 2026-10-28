@@ -1,3 +1,16 @@
+/* Calm study tokens for /preview/motion. They do not animate the homepage by themselves. */
+:root {
+  --preview-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --preview-dur-enter: 520ms;
+  --preview-dur-fade: 2400ms;
+  --preview-dur-field: 2800ms;
+  --preview-delay-step: 160ms;
+  --preview-delay-photo: 1200ms;
+  --preview-delay-photo-late: 3800ms;
+  --preview-shift: 6px;
+  --preview-rise: 8px;
+}
+
 .line-art {
   color: var(--color-draw);
   container-type: inline-size;
@@ -546,3 +559,14 @@ html.motion-ready .wrap-line {
     stroke-dashoffset: 0;
   }
 }
+
+/* Line decoration does not lead the quiet paper room. */
+.hero-still,
+.chair-still,
+.scroll-stem,
+.hero-open-stroke,
+.news-open-stroke,
+.wrap-line {
+  display: none;
+}
+
